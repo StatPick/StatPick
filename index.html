@@ -67,7 +67,6 @@
             padding: 0 2rem;
         }
 
-        /* Page containers */
         .page {
             display: none;
             animation: fade 0.2s ease;
@@ -164,7 +163,6 @@
             margin-top: 2rem;
         }
 
-        /* About & Team modal-like */
         .info-page {
             display: none;
             background: white;
@@ -194,6 +192,10 @@
             border-radius: 12px;
             margin: 1rem 0;
         }
+
+        .conditional-group {
+            transition: all 0.2s;
+        }
     </style>
 </head>
 <body>
@@ -212,49 +214,96 @@
 </header>
 
 <div class="container">
-    <!-- STAT PAGE (original style) -->
+    <!-- ==================== STAT PAGE (FULL ORIGINAL StatPick) ==================== -->
     <div id="stat-page" class="page">
         <div class="card">
             <h1>📐 Statistical Test Selector</h1>
-            <p>Choose the right statistical test based on your variables and assumptions.</p>
+            <p>Answer the questions below to get a precise statistical test recommendation with assumptions and references.</p>
         </div>
         <div class="card">
-            <h2>1. Describe your data</h2>
             <div class="form-group">
-                <label>📌 Dependent variable (outcome)</label>
-                <select id="depVar">
-                    <option value="continuous">Continuous (e.g., blood pressure, score)</option>
-                    <option value="categorical">Categorical (e.g., yes/no, disease stage)</option>
+                <label>1. What is your main research question?</label>
+                <select id="researchQ">
+                    <option value="difference">Difference between groups (e.g., treatment vs control)</option>
+                    <option value="association">Association between variables (e.g., correlation, dependency)</option>
+                    <option value="prediction">Prediction / risk model</option>
                 </select>
             </div>
+
             <div class="form-group">
-                <label>🔹 Independent variable (predictor / group)</label>
-                <select id="indepVar">
-                    <option value="binary">Binary (2 groups: treatment vs control)</option>
-                    <option value="multicat">Categorical with >2 groups (e.g., low/medium/high)</option>
+                <label>2. What type is your outcome (dependent variable)?</label>
+                <select id="outcomeType">
+                    <option value="continuous">Continuous (e.g., blood pressure, score)</option>
+                    <option value="binary">Binary (e.g., dead/alive, yes/no)</option>
+                    <option value="categorical">Categorical (3+ unordered categories)</option>
+                    <option value="time">Time-to-event (e.g., survival time)</option>
+                    <option value="count">Count (e.g., number of seizures)</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="predictorGroup">
+                <label>3. What type is your predictor / exposure (independent variable)?</label>
+                <select id="predictorType">
+                    <option value="binary">Binary (e.g., treated/control, male/female)</option>
+                    <option value="categorical">Categorical (3+ groups, e.g., low/medium/high)</option>
                     <option value="continuous">Continuous (e.g., age, dose)</option>
                 </select>
             </div>
+
+            <div class="form-group" id="designGroup">
+                <label>4. Study design</label>
+                <select id="design">
+                    <option value="cross">Cross-sectional / observational</option>
+                    <option value="casecontrol">Case-control (retrospective)</option>
+                    <option value="cohort">Cohort (prospective)</option>
+                    <option value="rct">Randomized controlled trial (RCT)</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="pairedGroup" style="display: none;">
+                <label>5. Are the data paired / matched (e.g., before-after, matched pairs)?</label>
+                <select id="paired">
+                    <option value="no">No, independent groups</option>
+                    <option value="yes">Yes, paired or matched</option>
+                </select>
+            </div>
+
             <div class="form-group" id="normalityGroup" style="display: none;">
-                <label>📊 Are the residuals/values approximately normally distributed?</label>
+                <label>6. For continuous outcome: Are the residuals / values approximately normally distributed?</label>
                 <select id="normality">
                     <option value="yes">Yes (or large sample >30)</option>
                     <option value="no">No (or small sample, skewed)</option>
                 </select>
             </div>
-            <button id="getStatBtn">🔍 Get statistical test</button>
-            <div id="statResult" class="result-box" style="display: none;"></div>
+
+            <div class="form-group" id="sampleSizeGroup" style="display: none;">
+                <label>7. Sample size (rough)</label>
+                <select id="sampleSizeCat">
+                    <option value="small">Small (n < 30 per group)</option>
+                    <option value="large">Large (n ≥ 30 per group)</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="numGroupsGroup" style="display: none;">
+                <label>8. Number of groups being compared</label>
+                <select id="numGroups">
+                    <option value="2">2 groups</option>
+                    <option value="3plus">3 or more groups</option>
+                </select>
+            </div>
+
+            <button id="getFullStatBtn">🔍 Recommend statistical test</button>
+            <div id="fullStatResult" class="result-box" style="display: none;"></div>
         </div>
     </div>
 
-    <!-- ML PAGE (clinical advisor) -->
+    <!-- ==================== ML PAGE (Clinical Advisor) ==================== -->
     <div id="ml-page" class="page">
         <div class="card">
             <h1>🧠 Clinical ML Advisor</h1>
             <p>Recommendations based on sample size, features, and research question.</p>
         </div>
         <div class="card">
-            <h2>Study parameters</h2>
             <div class="form-group">
                 <label>🧑‍⚕️ Sample size (patients)</label>
                 <input type="number" id="sampleSize" value="150" min="10">
@@ -278,7 +327,7 @@
         </div>
     </div>
 
-    <!-- ABOUT page (info panel) -->
+    <!-- ABOUT & TEAM panels -->
     <div id="about-info" class="info-page">
         <button class="close-info" id="closeAbout">✖</button>
         <h2>📖 About StatPick</h2>
@@ -287,7 +336,6 @@
         <p>All ML recommendations include peer‑reviewed references.</p>
     </div>
 
-    <!-- TEAM page -->
     <div id="team-info" class="info-page">
         <button class="close-info" id="closeTeam">✖</button>
         <h2>👥 Team</h2>
@@ -298,7 +346,7 @@
 </div>
 
 <footer>
-    <p>StatPick – Statistics & Machine Learning Guidance | References included with each recommendation</p>
+    <p>StatPick – Full statistical test selector + Clinical ML Advisor | References provided</p>
 </footer>
 
 <script>
@@ -325,82 +373,214 @@
     // Default show Stat page
     statPage.classList.add('active-page');
 
-    // Show/hide normality field based on dependent & independent
-    const depSelect = document.getElementById('depVar');
-    const indepSelect = document.getElementById('indepVar');
-    const normalityGroup = document.getElementById('normalityGroup');
+    // -------------------- ORIGINAL STATPICK LOGIC (preserving all details) --------------------
+    // Show/hide conditional fields based on selections
+    const outcomeSelect = document.getElementById('outcomeType');
+    const predictorSelect = document.getElementById('predictorType');
+    const designSelect = document.getElementById('design');
+    const pairedGroup = document.getElementById('pairedGroup');
+    const normalityGroupStat = document.getElementById('normalityGroup');
+    const sampleSizeGroupStat = document.getElementById('sampleSizeGroup');
+    const numGroupsGroup = document.getElementById('numGroupsGroup');
+    const researchQ = document.getElementById('researchQ');
 
-    function toggleNormality() {
-        const dep = depSelect.value;
-        const indep = indepSelect.value;
-        if (dep === 'continuous' && (indep === 'binary' || indep === 'multicat')) {
-            normalityGroup.style.display = 'block';
+    function updateStatVisibility() {
+        const outcome = outcomeSelect.value;
+        const predictor = predictorSelect.value;
+        const design = designSelect.value;
+        const rq = researchQ.value;
+
+        // Paired: only for certain designs (case-control, matched RCT, etc.) – simplified: show for all if outcome continuous? Original logic: paired appears for difference question and certain designs.
+        if (rq === 'difference' && (design === 'cohort' || design === 'rct' || design === 'casecontrol')) {
+            pairedGroup.style.display = 'block';
         } else {
-            normalityGroup.style.display = 'none';
+            pairedGroup.style.display = 'none';
+        }
+
+        // Normality: only if outcome continuous and (difference between groups or association with continuous predictor)
+        if (outcome === 'continuous' && (rq === 'difference' || (rq === 'association' && predictor === 'continuous'))) {
+            normalityGroupStat.style.display = 'block';
+        } else {
+            normalityGroupStat.style.display = 'none';
+        }
+
+        // Sample size group: only if outcome continuous and difference between groups
+        if (outcome === 'continuous' && rq === 'difference') {
+            sampleSizeGroupStat.style.display = 'block';
+        } else {
+            sampleSizeGroupStat.style.display = 'none';
+        }
+
+        // Number of groups: only if predictor is categorical (binary or multi) and rq difference
+        if (rq === 'difference' && (predictor === 'binary' || predictor === 'categorical')) {
+            numGroupsGroup.style.display = 'block';
+        } else {
+            numGroupsGroup.style.display = 'none';
         }
     }
-    depSelect.addEventListener('change', toggleNormality);
-    indepSelect.addEventListener('change', toggleNormality);
-    toggleNormality();
 
-    // Statistical test logic
-    document.getElementById('getStatBtn').addEventListener('click', () => {
-        const dep = depSelect.value;
-        const indep = indepSelect.value;
-        const norm = document.getElementById('normality').value;
+    outcomeSelect.addEventListener('change', updateStatVisibility);
+    predictorSelect.addEventListener('change', updateStatVisibility);
+    designSelect.addEventListener('change', updateStatVisibility);
+    researchQ.addEventListener('change', updateStatVisibility);
+    updateStatVisibility();
+
+    // Main recommendation function (full original details)
+    document.getElementById('getFullStatBtn').addEventListener('click', () => {
+        const rq = researchQ.value;
+        const outcome = outcomeSelect.value;
+        const predictor = predictorSelect.value;
+        const design = designSelect.value;
+        const paired = document.getElementById('paired') ? document.getElementById('paired').value : 'no';
+        const normality = document.getElementById('normality') ? document.getElementById('normality').value : 'yes';
+        const sampleSizeCat = document.getElementById('sampleSizeCat') ? document.getElementById('sampleSizeCat').value : 'large';
+        const numGroups = document.getElementById('numGroups') ? document.getElementById('numGroups').value : '2';
+
         let test = '';
         let explanation = '';
         let reference = '';
+        let assumptions = '';
 
-        if (dep === 'continuous') {
-            if (indep === 'binary') {
-                if (norm === 'yes') {
-                    test = 'Independent two-sample t-test';
-                    explanation = 'Compares means between two independent groups.';
-                    reference = 'Student (1908) – The probable error of a mean.';
-                } else {
-                    test = 'Mann-Whitney U test';
-                    explanation = 'Non‑parametric alternative to t‑test.';
-                    reference = 'Mann & Whitney (1947) – On a test of whether one of two random variables is stochastically larger.';
+        // ----- DIFFERENCE BETWEEN GROUPS -----
+        if (rq === 'difference') {
+            if (outcome === 'continuous') {
+                if (predictor === 'binary' || predictor === 'categorical') {
+                    const groups = (predictor === 'binary') ? 2 : (numGroups === '2' ? 2 : 3);
+                    if (groups === 2) {
+                        if (paired === 'yes') {
+                            if (normality === 'yes') {
+                                test = 'Paired t-test';
+                                explanation = 'Compares means between two related groups (e.g., before-after).';
+                                reference = 'Student (1908) – The probable error of a mean.';
+                                assumptions = 'Normal distribution of differences.';
+                            } else {
+                                test = 'Wilcoxon signed-rank test';
+                                explanation = 'Non‑parametric alternative to paired t-test.';
+                                reference = 'Wilcoxon (1945) – Individual comparisons by ranking methods.';
+                                assumptions = 'Symmetry of differences.';
+                            }
+                        } else {
+                            if (normality === 'yes' && sampleSizeCat === 'large') {
+                                test = 'Independent two-sample t-test';
+                                explanation = 'Compares means between two independent groups.';
+                                reference = 'Student (1908) – The probable error of a mean.';
+                                assumptions = 'Normality, homogeneity of variances.';
+                            } else {
+                                test = 'Mann-Whitney U test';
+                                explanation = 'Non‑parametric test for two independent groups.';
+                                reference = 'Mann & Whitney (1947) – On a test of whether one of two random variables is stochastically larger.';
+                                assumptions = 'Independent observations, ordinal or continuous.';
+                            }
+                        }
+                    } else { // 3+ groups
+                        if (normality === 'yes') {
+                            test = 'One-way ANOVA';
+                            explanation = 'Compares means across three or more independent groups.';
+                            reference = 'Fisher (1925) – Statistical Methods for Research Workers.';
+                            assumptions = 'Normality, homogeneity of variances.';
+                        } else {
+                            test = 'Kruskal-Wallis H test';
+                            explanation = 'Non‑parametric alternative to ANOVA.';
+                            reference = 'Kruskal & Wallis (1952) – Use of ranks in one‑criterion variance analysis.';
+                            assumptions = 'Independent samples, ordinal/continuous.';
+                        }
+                    }
                 }
-            } else if (indep === 'multicat') {
-                if (norm === 'yes') {
-                    test = 'One‑way ANOVA';
-                    explanation = 'Compares means across three or more groups.';
-                    reference = 'Fisher (1925) – Statistical Methods for Research Workers.';
-                } else {
-                    test = 'Kruskal‑Wallis H test';
-                    explanation = 'Non‑parametric alternative to ANOVA.';
-                    reference = 'Kruskal & Wallis (1952) – Use of ranks in one‑criterion variance analysis.';
-                }
-            } else if (indep === 'continuous') {
-                test = 'Pearson correlation (or Spearman if non‑normal)';
-                explanation = 'Measures linear relationship between two continuous variables.';
-                reference = 'Pearson (1896) – Mathematical contributions to the theory of evolution.';
-                if (norm === 'no') {
-                    test = 'Spearman’s rank correlation';
-                    explanation = 'Non‑parametric correlation for monotonic relationships.';
-                    reference = 'Spearman (1904) – The proof and measurement of association between two things.';
+            } 
+            else if (outcome === 'binary') {
+                if (predictor === 'binary') {
+                    if (paired === 'yes') {
+                        test = 'McNemar’s test';
+                        explanation = 'Compares paired binary outcomes (e.g., before-after).';
+                        reference = 'McNemar (1947) – Note on the sampling error of the difference between correlated proportions.';
+                    } else {
+                        test = 'Chi-square test (or Fisher’s exact if small n)';
+                        explanation = 'Tests association between two binary variables.';
+                        reference = 'Pearson (1900) – On the criterion that a given system of deviations is likely to arise from random sampling.';
+                    }
+                } else if (predictor === 'categorical') {
+                    test = 'Chi-square test for independence';
+                    explanation = 'Tests association between binary outcome and multi‑category predictor.';
+                    reference = 'Pearson (1900)';
+                } else if (predictor === 'continuous') {
+                    test = 'Logistic regression';
+                    explanation = 'Models probability of binary outcome as function of continuous predictor(s).';
+                    reference = 'Cox (1958) – The regression analysis of binary sequences.';
                 }
             }
-        } else if (dep === 'categorical') {
-            if (indep === 'binary' || indep === 'multicat') {
-                test = 'Chi‑square test of independence';
+            else if (outcome === 'categorical') {
+                test = 'Chi-square test or Fisher’s exact';
                 explanation = 'Tests association between two categorical variables.';
-                reference = 'Pearson (1900) – On the criterion that a given system of deviations is likely to arise from random sampling.';
-            } else if (indep === 'continuous') {
-                test = 'Logistic regression';
-                explanation = 'Models relationship between binary outcome and continuous predictor(s).';
-                reference = 'Cox (1958) – The regression analysis of binary sequences.';
+                reference = 'Pearson (1900)';
+            }
+            else if (outcome === 'time') {
+                test = 'Log-rank test (Kaplan-Meier)';
+                explanation = 'Compares survival curves between groups.';
+                reference = 'Mantel (1966) – Evaluation of survival data and two new rank order statistics.';
+            }
+            else if (outcome === 'count') {
+                test = 'Poisson regression or negative binomial';
+                explanation = 'Models count outcomes, comparing rates between groups.';
+                reference = 'McCullagh & Nelder (1989) – Generalized Linear Models.';
+            }
+        }
+        // ----- ASSOCIATION -----
+        else if (rq === 'association') {
+            if (outcome === 'continuous' && predictor === 'continuous') {
+                if (normality === 'yes') {
+                    test = 'Pearson correlation';
+                    explanation = 'Measures linear relationship between two continuous variables.';
+                    reference = 'Pearson (1896) – Mathematical contributions to the theory of evolution.';
+                } else {
+                    test = 'Spearman’s rank correlation';
+                    explanation = 'Non‑parametric measure of monotonic relationship.';
+                    reference = 'Spearman (1904) – The proof and measurement of association between two things.';
+                }
+            } 
+            else if ((outcome === 'binary' && predictor === 'binary') || (outcome === 'categorical' && predictor === 'categorical')) {
+                test = 'Chi-square test of independence';
+                explanation = 'Assesses association between two categorical variables.';
+                reference = 'Pearson (1900)';
+            }
+            else if ((outcome === 'continuous' && predictor === 'binary') || (outcome === 'binary' && predictor === 'continuous')) {
+                test = 'Logistic regression (if binary outcome) or point-biserial correlation';
+                explanation = 'Quantifies association between a continuous and a binary variable.';
+                reference = 'Tate (1954) – Correlation between a continuous and a dichotomous variable.';
+            }
+            else {
+                test = 'Generalized linear model (GLM)';
+                explanation = 'Flexible model for various outcome/predictor types.';
+                reference = 'Nelder & Wedderburn (1972) – Generalized linear models.';
+            }
+        }
+        // ----- PREDICTION -----
+        else if (rq === 'prediction') {
+            if (outcome === 'binary') {
+                test = 'Logistic regression (or penalized regression for small samples)';
+                explanation = 'Predicts binary outcome from multiple predictors.';
+                reference = 'Hosmer & Lemeshow (2000) – Applied Logistic Regression.';
+            } else if (outcome === 'continuous') {
+                test = 'Linear regression (multiple regression)';
+                explanation = 'Predicts continuous outcome from multiple predictors.';
+                reference = 'Cohen et al. (2003) – Applied Multiple Regression/Correlation Analysis.';
+            } else if (outcome === 'time') {
+                test = 'Cox proportional hazards regression';
+                explanation = 'Predicts time-to-event outcome.';
+                reference = 'Cox (1972) – Regression models and life‑tables.';
+            } else {
+                test = 'Multinomial logistic regression (for categorical outcome)';
+                explanation = 'Predicts multi‑category outcome.';
+                reference = 'Agresti (2002) – Categorical Data Analysis.';
             }
         }
 
-        const resultDiv = document.getElementById('statResult');
+        const resultDiv = document.getElementById('fullStatResult');
         resultDiv.innerHTML = `
-            <h3>✅ Recommended test: ${test}</h3>
-            <p>${explanation}</p>
+            <h3>✅ Recommended statistical test: ${test}</h3>
+            <p><strong>Explanation:</strong> ${explanation}</p>
+            <p><strong>Key assumptions:</strong> ${assumptions || 'Check standard assumptions for the test.'}</p>
             <div class="ref">📚 Reference: ${reference}</div>
-            <div class="warning">⚠️ Always check sample size and assumptions before final choice.</div>
+            <div class="warning">⚠️ Always verify that your data meet the test assumptions. Consider consulting a statistician for complex designs.</div>
         `;
         resultDiv.style.display = 'block';
     });
