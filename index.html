@@ -1,1089 +1,510 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>StatPick — Biomedical Statistical Test Selector</title>
-<meta name="description" content="An interactive decision guide to help biomedical researchers select the correct statistical test based on data type, study design, and distributional assumptions.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;1,9..144,300&family=Hanken+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
-<style>
-:root {
-  --bg: #F8F5F0;
-  --card: #FFFFFF;
-  --border: #E2DDD6;
-  --border-hover: #C4BDB3;
-  --t1: #1A1814;
-  --t2: #4A4640;
-  --t3: #8C8580;
-  --indigo: #4338CA; --indigo-l: #EEF2FF; --indigo-m: #C7D2FE;
-  --teal:   #0D9488; --teal-l:   #F0FDFA; --teal-m:   #99F6E4;
-  --violet: #6D28D9; --violet-l: #F5F3FF; --violet-m: #DDD6FE;
-  --amber:  #92400E; --amber-l:  #FFFBEB; --amber-m:  #FDE68A;
-  --blue:   #1D4ED8; --blue-l:   #EFF6FF; --blue-m:   #BFDBFE;
-  --rose:   #9D174D; --rose-l:   #FFF1F2; --rose-m:   #FECDD3;
-  --slate:  #334155; --slate-l:  #F8FAFC; --slate-m:  #CBD5E1;
-  --emerald:#065F46; --emerald-l:#ECFDF5; --emerald-m:#A7F3D0;
-  --radius-sm: 6px; --radius: 10px; --radius-lg: 14px;
-  --shadow: 0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.05);
-  --shadow-md: 0 4px 12px rgba(0,0,0,.08), 0 2px 4px rgba(0,0,0,.04);
-}
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
-body { font-family: 'Hanken Grotesk', sans-serif; background: var(--bg); color: var(--t1); min-height: 100vh; line-height: 1.6; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StatPick – Statistics & ML Advisor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-/* ── HEADER ────────────────────────────────────────────────── */
-header {
-  background: #1E1B4B;
-  padding: 0 1.5rem;
-  position: sticky; top: 0; z-index: 50;
-  display: flex; align-items: center; justify-content: space-between;
-  height: 58px;
-  border-bottom: 1px solid rgba(255,255,255,.07);
-}
-.brand { display: flex; align-items: baseline; gap: .5rem; }
-.brand-name {
-  font-family: 'Fraunces', serif;
-  font-style: italic; font-weight: 300; font-size: 22px;
-  color: #E0D9FF; letter-spacing: -.01em;
-}
-.brand-sep { color: rgba(255,255,255,.25); font-size: 18px; }
-.brand-sub { font-size: 12px; font-weight: 400; color: rgba(255,255,255,.45); letter-spacing: .01em; }
-.header-right { display: flex; align-items: center; gap: 1rem; }
-.header-link {
-  font-size: 12px; font-weight: 500; color: rgba(255,255,255,.5);
-  text-decoration: none; transition: color .15s;
-}
-.header-link:hover { color: rgba(255,255,255,.85); }
-.header-badge {
-  font-size: 11px; font-weight: 500; color: #A5B4FC;
-  background: rgba(165,180,252,.12); border: 1px solid rgba(165,180,252,.2);
-  padding: 2px 8px; border-radius: 99px;
-}
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f4f7fc;
+            color: #1e2a3e;
+            line-height: 1.5;
+        }
 
-/* ── LAYOUT ─────────────────────────────────────────────────── */
-main { max-width: 780px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+        header {
+            background: white;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
 
-/* ── PROGRESS ────────────────────────────────────────────────── */
-.progress-wrap { margin-bottom: 1.5rem; }
-.progress-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: .5rem; }
-.progress-label { font-size: 12px; font-weight: 500; color: var(--t3); letter-spacing: .02em; }
-.progress-step { font-size: 12px; color: var(--t3); }
-.progress-track { height: 3px; background: var(--border); border-radius: 2px; }
-.progress-fill { height: 100%; background: var(--indigo); border-radius: 2px; transition: width .4s cubic-bezier(.4,0,.2,1); }
+        nav {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
 
-/* ── BREADCRUMB ──────────────────────────────────────────────── */
-.breadcrumb {
-  display: flex; flex-wrap: wrap; gap: 4px; align-items: center;
-  margin-bottom: 1.25rem; min-height: 24px;
-}
-.bc-pill {
-  font-size: 11px; font-weight: 500; color: var(--t3);
-  background: var(--border); border-radius: 99px;
-  padding: 2px 8px; max-width: 200px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.bc-sep { font-size: 12px; color: var(--border); line-height: 1; }
-.bc-pill.current { color: var(--indigo); background: var(--indigo-l); }
+        .logo {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #2c7da0;
+        }
 
-/* ── QUESTION CARD ───────────────────────────────────────────── */
-.q-wrap {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: var(--radius-lg); padding: 1.75rem;
-  margin-bottom: 1rem; box-shadow: var(--shadow);
-}
-.q-eyebrow {
-  font-size: 11px; font-weight: 600; letter-spacing: .08em;
-  text-transform: uppercase; color: var(--t3); margin-bottom: .625rem;
-}
-.q-text {
-  font-family: 'Fraunces', serif; font-weight: 300;
-  font-size: clamp(18px, 2.5vw, 22px); color: var(--t1);
-  line-height: 1.35; margin-bottom: 0;
-}
-.q-hint {
-  margin-top: 1rem; font-size: 13px; color: var(--t2); line-height: 1.6;
-  background: var(--bg); border-left: 3px solid var(--border);
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-  padding: .625rem .875rem;
-}
-.q-hint strong { font-weight: 600; color: var(--t1); }
+        .nav-links {
+            display: flex;
+            gap: 1.8rem;
+            list-style: none;
+            flex-wrap: wrap;
+        }
 
-/* ── OPTIONS ─────────────────────────────────────────────────── */
-.opts-grid { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1.25rem; }
-.opt-card {
-  display: flex; align-items: flex-start; gap: 12px;
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 1rem 1.125rem;
-  cursor: pointer; text-align: left; width: 100%;
-  transition: border-color .15s, box-shadow .15s, transform .1s;
-  position: relative; overflow: hidden;
-}
-.opt-card::before {
-  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
-  width: 3px; background: var(--indigo); opacity: 0;
-  transition: opacity .15s;
-}
-.opt-card:hover { border-color: var(--border-hover); box-shadow: var(--shadow-md); }
-.opt-card:hover::before { opacity: 1; }
-.opt-card:active { transform: scale(.99); }
-.opt-icon {
-  width: 28px; height: 28px; border-radius: 50%;
-  background: var(--bg); border: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; margin-top: 1px; transition: background .15s, border-color .15s;
-}
-.opt-card:hover .opt-icon { background: var(--indigo-l); border-color: var(--indigo-m); }
-.opt-icon svg { width: 12px; height: 12px; stroke: var(--t3); transition: stroke .15s; }
-.opt-card:hover .opt-icon svg { stroke: var(--indigo); }
-.opt-label { font-size: 14.5px; font-weight: 500; color: var(--t1); line-height: 1.3; }
-.opt-sub { font-size: 12.5px; color: var(--t3); margin-top: 3px; font-weight: 400; }
+        .nav-links a {
+            text-decoration: none;
+            color: #2c3e50;
+            font-weight: 500;
+            transition: color 0.2s;
+            cursor: pointer;
+        }
 
-/* ── NAV BUTTONS ─────────────────────────────────────────────── */
-.nav-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.btn-back, .btn-restart, .btn-print {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: 13px; font-weight: 500; border-radius: var(--radius-sm);
-  padding: .45rem .875rem; cursor: pointer; border: 1px solid var(--border);
-  transition: background .15s, border-color .15s, color .15s; background: var(--card); color: var(--t2);
-}
-.btn-back:hover, .btn-restart:hover, .btn-print:hover { background: var(--bg); border-color: var(--border-hover); color: var(--t1); }
-.btn-back svg, .btn-restart svg, .btn-print svg { width: 14px; height: 14px; stroke: currentColor; }
+        .nav-links a:hover {
+            color: #2c7da0;
+        }
 
-/* ── LEAF RECOMMENDATION ─────────────────────────────────────── */
-.leaf-wrap { margin-bottom: 1.25rem; }
-.leaf-header {
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-  padding: 1.5rem 1.75rem 1.375rem;
-  border: 1px solid var(--border); border-bottom: none;
-  position: relative; overflow: hidden;
-}
-.leaf-header::after {
-  content: ''; position: absolute; right: -30px; bottom: -30px;
-  width: 120px; height: 120px; border-radius: 50%;
-  background: rgba(255,255,255,.08); pointer-events: none;
-}
-.leaf-cat-badge {
-  display: inline-flex; align-items: center; gap: 5px;
-  font-size: 11px; font-weight: 600; letter-spacing: .06em;
-  text-transform: uppercase; padding: 3px 9px;
-  border-radius: 99px; border: 1px solid; margin-bottom: .75rem;
-}
-.leaf-name {
-  font-family: 'Fraunces', serif; font-weight: 500;
-  font-size: clamp(20px, 3vw, 26px); line-height: 1.2; margin-bottom: .375rem;
-}
-.leaf-brief { font-size: 13.5px; font-weight: 400; line-height: 1.5; opacity: .85; }
+        .container {
+            max-width: 1300px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
 
-/* header color variants */
-.lh-indigo { background: #1E1B4B; }
-.lh-indigo .leaf-cat-badge { background: rgba(165,180,252,.15); border-color: rgba(165,180,252,.35); color: #A5B4FC; }
-.lh-indigo .leaf-name, .lh-indigo .leaf-brief { color: #E8E6FF; }
+        /* Page containers */
+        .page {
+            display: none;
+            animation: fade 0.2s ease;
+        }
 
-.lh-teal { background: #134E4A; }
-.lh-teal .leaf-cat-badge { background: rgba(153,246,228,.15); border-color: rgba(153,246,228,.35); color: #99F6E4; }
-.lh-teal .leaf-name, .lh-teal .leaf-brief { color: #CCFBF1; }
+        .page.active-page {
+            display: block;
+        }
 
-.lh-violet { background: #2E1065; }
-.lh-violet .leaf-cat-badge { background: rgba(221,214,254,.15); border-color: rgba(221,214,254,.35); color: #DDD6FE; }
-.lh-violet .leaf-name, .lh-violet .leaf-brief { color: #EDE9FE; }
+        @keyframes fade {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
 
-.lh-amber { background: #451A03; }
-.lh-amber .leaf-cat-badge { background: rgba(253,230,138,.15); border-color: rgba(253,230,138,.35); color: #FDE68A; }
-.lh-amber .leaf-name, .lh-amber .leaf-brief { color: #FEF3C7; }
+        .card {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
 
-.lh-blue { background: #1E3A5F; }
-.lh-blue .leaf-cat-badge { background: rgba(191,219,254,.15); border-color: rgba(191,219,254,.35); color: #BFDBFE; }
-.lh-blue .leaf-name, .lh-blue .leaf-brief { color: #DBEAFE; }
+        h1 {
+            font-size: 1.9rem;
+            margin-bottom: 0.5rem;
+            color: #0b3b4f;
+        }
 
-.lh-rose { background: #4C0519; }
-.lh-rose .leaf-cat-badge { background: rgba(254,205,211,.15); border-color: rgba(254,205,211,.35); color: #FECDD3; }
-.lh-rose .leaf-name, .lh-rose .leaf-brief { color: #FFE4E6; }
+        h2 {
+            font-size: 1.5rem;
+            margin: 1.5rem 0 1rem;
+            color: #1e5a6f;
+            border-left: 4px solid #2c7da0;
+            padding-left: 1rem;
+        }
 
-.lh-slate { background: #0F172A; }
-.lh-slate .leaf-cat-badge { background: rgba(203,213,225,.15); border-color: rgba(203,213,225,.35); color: #CBD5E1; }
-.lh-slate .leaf-name, .lh-slate .leaf-brief { color: #E2E8F0; }
+        .form-group {
+            margin-bottom: 1.3rem;
+        }
 
-.lh-emerald { background: #022C22; }
-.lh-emerald .leaf-cat-badge { background: rgba(167,243,208,.15); border-color: rgba(167,243,208,.35); color: #A7F3D0; }
-.lh-emerald .leaf-name, .lh-emerald .leaf-brief { color: #D1FAE5; }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+            color: #1e4663;
+        }
 
-/* leaf body */
-.leaf-body {
-  background: var(--card); border: 1px solid var(--border); border-top: none;
-  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
-}
-.leaf-section { padding: 1.125rem 1.75rem; border-top: 1px solid var(--border); }
-.leaf-section:first-child { border-top: none; }
-.ls-label {
-  font-size: 10.5px; font-weight: 600; letter-spacing: .09em;
-  text-transform: uppercase; color: var(--t3); margin-bottom: .5rem;
-}
-.ls-content { font-size: 13.5px; color: var(--t2); line-height: 1.6; }
-.ls-list { padding: 0; list-style: none; display: flex; flex-direction: column; gap: .3rem; }
-.ls-list li { display: flex; gap: .5rem; align-items: flex-start; }
-.ls-list li::before { content: '—'; color: var(--t3); flex-shrink: 0; margin-top: .05em; }
-.check-list { padding: 0; list-style: none; display: flex; flex-direction: column; gap: .3rem; }
-.check-list li { display: flex; gap: .5rem; align-items: flex-start; font-size: 13.5px; color: var(--t2); line-height: 1.5; }
-.check-list li::before { content: '✓'; color: var(--teal); font-size: 13px; flex-shrink: 0; font-weight: 600; margin-top: .08em; }
-.code-block { background: #1A1814; border-radius: var(--radius-sm); padding: .75rem 1rem; margin-top: .5rem; }
-.code-lang { font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,.3); margin-bottom: .25rem; }
-.code-line { font-family: 'Courier New', monospace; font-size: 12.5px; color: #A5B4FC; line-height: 1.55; }
-.code-comment { color: rgba(255,255,255,.3); }
-.codes-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-@media (max-width: 560px) { .codes-pair { grid-template-columns: 1fr; } }
-.report-items { display: flex; flex-direction: column; gap: .25rem; }
-.report-item {
-  font-size: 13px; color: var(--t2); background: var(--bg);
-  border: 1px solid var(--border); border-radius: var(--radius-sm);
-  padding: .35rem .75rem; display: inline-block;
-  font-family: 'Courier New', monospace;
-}
-.warn-box {
-  background: #FEF9EC; border: 1px solid #FDE68A; border-radius: var(--radius-sm);
-  padding: .625rem .875rem; margin-top: .625rem;
-}
-.warn-title { font-size: 11.5px; font-weight: 600; color: var(--amber); margin-bottom: .25rem; }
-.warn-text { font-size: 13px; color: #92400E; line-height: 1.55; }
-.info-box {
-  background: var(--indigo-l); border: 1px solid var(--indigo-m);
-  border-radius: var(--radius-sm); padding: .625rem .875rem; margin-top: .625rem;
-}
-.info-text { font-size: 13px; color: var(--indigo); line-height: 1.55; }
+        select, input {
+            width: 100%;
+            padding: 0.7rem 1rem;
+            border: 1px solid #cbd5e6;
+            border-radius: 12px;
+            font-size: 1rem;
+            background: white;
+        }
 
-/* ── LEGEND ──────────────────────────────────────────────────── */
-.legend {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: var(--radius-lg); padding: 1.125rem 1.5rem;
-  margin-bottom: 2rem; box-shadow: var(--shadow);
-}
-.legend-title { font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--t3); margin-bottom: .75rem; }
-.legend-grid { display: flex; flex-wrap: wrap; gap: .375rem; }
-.legend-item {
-  display: flex; align-items: center; gap: 6px;
-  font-size: 12px; color: var(--t2); font-weight: 400;
-}
-.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+        button {
+            background: #2c7da0;
+            color: white;
+            border: none;
+            padding: 0.7rem 1.8rem;
+            border-radius: 40px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 0.5rem;
+        }
 
-/* ── FOOTER ──────────────────────────────────────────────────── */
-footer {
-  text-align: center; padding: 2rem 1.25rem;
-  border-top: 1px solid var(--border); margin-top: 1rem;
-}
-footer p { font-size: 12px; color: var(--t3); line-height: 1.6; }
-footer a { color: var(--t3); text-decoration: underline; text-underline-offset: 2px; }
-footer a:hover { color: var(--t2); }
+        button:hover {
+            background: #1f5e7a;
+        }
 
-/* ── UTILS ───────────────────────────────────────────────────── */
-.hidden { display: none !important; }
-.fade-in { animation: fadeIn .2s ease; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-@media print {
-  header, .nav-row, .progress-wrap, .breadcrumb, footer { display: none !important; }
-  body { background: white; }
-  .leaf-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-}
-@media (max-width: 540px) {
-  .brand-sub { display: none; }
-  main { padding: 1.25rem .875rem 3rem; }
-  .q-wrap { padding: 1.25rem; }
-  .leaf-header { padding: 1.25rem; }
-  .leaf-section { padding: .875rem 1.25rem; }
-}
-</style>
+        .result-box {
+            background: #eef2f7;
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .ref {
+            font-size: 0.85rem;
+            color: #4a627a;
+            border-top: 1px dashed #b9cfdf;
+            padding-top: 0.6rem;
+            margin-top: 0.6rem;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: #5e7a93;
+            border-top: 1px solid #e2e8f0;
+            margin-top: 2rem;
+        }
+
+        /* About & Team modal-like */
+        .info-page {
+            display: none;
+            background: white;
+            border-radius: 28px;
+            padding: 2rem;
+            margin-top: 1rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .info-page.active-info {
+            display: block;
+        }
+
+        .close-info {
+            float: right;
+            background: none;
+            border: none;
+            font-size: 1.6rem;
+            cursor: pointer;
+            color: #7f8c8d;
+        }
+
+        .warning {
+            background: #fff8e7;
+            border-left: 4px solid #e6a017;
+            padding: 0.8rem;
+            border-radius: 12px;
+            margin: 1rem 0;
+        }
+    </style>
 </head>
 <body>
 
 <header>
-  <div class="brand">
-    <span class="brand-name">StatPick</span>
-    <span class="brand-sep">·</span>
-    <span class="brand-sub">Biomedical Statistical Test Selector</span>
-  </div>
-  <div class="header-right">
-    <span class="header-badge">v1.0</span>
-    <a href="https://github.com" class="header-link" id="gh-link" target="_blank" rel="noopener">GitHub ↗</a>
-  </div>
+    <nav>
+        <div class="logo">📊 StatPick</div>
+        <ul class="nav-links">
+            <li><a id="stat-nav">Stat</a></li>
+            <li><a id="ml-nav">ML Advisor</a></li>
+            <li><a id="about-nav">About</a></li>
+            <li><a id="team-nav">Team</a></li>
+            <li><a href="https://github.com/Farnoush-Kiyanpour" target="_blank">GitHub</a></li>
+        </ul>
+    </nav>
 </header>
 
-<main>
-  <!-- Legend -->
-  <div class="legend" id="legend">
-    <div class="legend-title">Test families</div>
-    <div class="legend-grid">
-      <div class="legend-item"><div class="legend-dot" style="background:#4338CA"></div>Parametric</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#0D9488"></div>Non-parametric</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#6D28D9"></div>Categorical</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#92400E"></div>Regression</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#1D4ED8"></div>Correlation</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#9D174D"></div>Agreement</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#334155"></div>Survival</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#065F46"></div>Diagnostic</div>
+<div class="container">
+    <!-- STAT PAGE (original style) -->
+    <div id="stat-page" class="page">
+        <div class="card">
+            <h1>📐 Statistical Test Selector</h1>
+            <p>Choose the right statistical test based on your variables and assumptions.</p>
+        </div>
+        <div class="card">
+            <h2>1. Describe your data</h2>
+            <div class="form-group">
+                <label>📌 Dependent variable (outcome)</label>
+                <select id="depVar">
+                    <option value="continuous">Continuous (e.g., blood pressure, score)</option>
+                    <option value="categorical">Categorical (e.g., yes/no, disease stage)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>🔹 Independent variable (predictor / group)</label>
+                <select id="indepVar">
+                    <option value="binary">Binary (2 groups: treatment vs control)</option>
+                    <option value="multicat">Categorical with >2 groups (e.g., low/medium/high)</option>
+                    <option value="continuous">Continuous (e.g., age, dose)</option>
+                </select>
+            </div>
+            <div class="form-group" id="normalityGroup" style="display: none;">
+                <label>📊 Are the residuals/values approximately normally distributed?</label>
+                <select id="normality">
+                    <option value="yes">Yes (or large sample >30)</option>
+                    <option value="no">No (or small sample, skewed)</option>
+                </select>
+            </div>
+            <button id="getStatBtn">🔍 Get statistical test</button>
+            <div id="statResult" class="result-box" style="display: none;"></div>
+        </div>
     </div>
-  </div>
 
-  <!-- Progress -->
-  <div class="progress-wrap" id="progress-wrap">
-    <div class="progress-meta">
-      <span class="progress-label" id="prog-label">Choose your analysis type</span>
-      <span class="progress-step" id="prog-step">Step 1</span>
+    <!-- ML PAGE (clinical advisor) -->
+    <div id="ml-page" class="page">
+        <div class="card">
+            <h1>🧠 Clinical ML Advisor</h1>
+            <p>Recommendations based on sample size, features, and research question.</p>
+        </div>
+        <div class="card">
+            <h2>Study parameters</h2>
+            <div class="form-group">
+                <label>🧑‍⚕️ Sample size (patients)</label>
+                <input type="number" id="sampleSize" value="150" min="10">
+            </div>
+            <div class="form-group">
+                <label>🔢 Number of features / predictors</label>
+                <input type="number" id="numFeatures" value="10" min="1">
+            </div>
+            <div class="form-group">
+                <label>🎯 Main research aim</label>
+                <select id="researchAim">
+                    <option value="binary">Binary classification (disease yes/no)</option>
+                    <option value="multi">Multi-class classification (3+ groups)</option>
+                    <option value="regression">Continuous outcome prediction</option>
+                    <option value="featureselection">Which features are most predictive?</option>
+                    <option value="rare">Rare event (<20% prevalence)</option>
+                </select>
+            </div>
+            <button id="mlRecommendBtn">🚀 Recommend ML approach</button>
+            <div id="mlResult" class="result-box" style="display: none;"></div>
+        </div>
     </div>
-    <div class="progress-track"><div class="progress-fill" id="prog-fill" style="width:8%"></div></div>
-  </div>
 
-  <!-- Breadcrumb -->
-  <div class="breadcrumb" id="breadcrumb"></div>
+    <!-- ABOUT page (info panel) -->
+    <div id="about-info" class="info-page">
+        <button class="close-info" id="closeAbout">✖</button>
+        <h2>📖 About StatPick</h2>
+        <p>StatPick helps researchers choose appropriate statistical tests and machine learning strategies. The clinical ML extension bridges clinical scientists and AI engineers by providing evidence‑based recommendations.</p>
+        <p><strong>Version:</strong> 2.0 (Statistics + ML)</p>
+        <p>All ML recommendations include peer‑reviewed references.</p>
+    </div>
 
-  <!-- Dynamic content area -->
-  <div id="content"></div>
-
-  <!-- Nav buttons -->
-  <div class="nav-row" id="nav-row">
-    <button class="btn-back hidden" id="btn-back" onclick="goBack()">
-      <svg viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Back
-    </button>
-    <button class="btn-restart hidden" id="btn-restart" onclick="restart()">
-      <svg viewBox="0 0 16 16" fill="none"><path d="M2 8a6 6 0 1 0 1.17-3.5" stroke-width="1.5" stroke-linecap="round"/><path d="M2 4.5V8h3.5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Start over
-    </button>
-    <button class="btn-print hidden" id="btn-print" onclick="window.print()">
-      <svg viewBox="0 0 16 16" fill="none"><rect x="3" y="1" width="10" height="8" rx="1" stroke-width="1.5"/><path d="M3 7H1.5A.5.5 0 0 0 1 7.5v5a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-5a.5.5 0 0 0-.5-.5H13" stroke-width="1.5" stroke-linecap="round"/><rect x="4" y="10" width="8" height="4" rx=".5" stroke-width="1.5"/><circle cx="13" cy="9" r=".75" fill="currentColor" stroke="none"/></svg>
-      Print
-    </button>
-  </div>
-</main>
+    <!-- TEAM page -->
+    <div id="team-info" class="info-page">
+        <button class="close-info" id="closeTeam">✖</button>
+        <h2>👥 Team</h2>
+        <p><strong>Farnoush Kiyanpour</strong> – Lead developer & clinical AI researcher<br>
+        <strong>StatPick Contributors</strong> – Open source community</p>
+        <p>GitHub: <a href="https://github.com/Farnoush-Kiyanpour" target="_blank">Farnoush-Kiyanpour</a></p>
+    </div>
+</div>
 
 <footer>
-  <p>StatPick is an educational decision guide, not a substitute for statistical expertise.<br>
-  Always consult a biostatistician for complex or confirmatory analyses.<br>
-  <a href="https://github.com" id="gh-footer-link" target="_blank" rel="noopener">View on GitHub</a> · For educational and research use</p>
+    <p>StatPick – Statistics & Machine Learning Guidance | References included with each recommendation</p>
 </footer>
 
 <script>
-// ── TREE NODES ──────────────────────────────────────────────────────────────
-const T = {
-  start: {
-    q: "What is your primary analytical goal?",
-    hint: "Choose the goal that best describes what you are trying to answer with your data. Each path leads to a different family of statistical methods.",
-    opts: [
-      {l:"Compare groups on an outcome variable", s:"Test whether two or more groups differ in a measured variable (e.g. treatment vs control, before vs after)", n:"compare"},
-      {l:"Measure association between two variables", s:"Quantify how strongly two variables are related, without comparing groups", n:"corr_type"},
-      {l:"Multivariable analysis — adjust for confounders", s:"Model the effect of a predictor while controlling for other variables (regression)", n:"multi_type"},
-      {l:"Assess agreement or reliability", s:"Evaluate how well two raters, instruments, or repeated measurements agree", n:"agree_type"},
-      {l:"Evaluate diagnostic test accuracy", s:"Sensitivity, specificity, predictive values, ROC curve, AUC", n:"diag_leaf"}
-    ]
-  },
-  compare: {
-    q: "What type is your outcome (dependent) variable?",
-    hint: "The outcome variable is what you are measuring or comparing between groups. Select the scale of measurement.",
-    opts: [
-      {l:"Continuous", s:"Measured on a numeric scale: age, BMI, blood pressure, creatinine, enzyme activity", n:"cont_groups"},
-      {l:"Categorical / Binary", s:"Two or more named categories: disease yes/no, success/failure, blood type ABO", n:"cat_type"},
-      {l:"Ordinal", s:"Ranked categories with unequal or unknown intervals: pain scale, ECOG performance status, Likert responses", n:"ord_groups"},
-      {l:"Survival / Time-to-event", s:"Time from a start point until an event occurs: death, relapse, eradication failure", n:"surv_leaf"}
-    ]
-  },
-  cont_groups: {
-    q: "How many groups are you comparing?",
-    hint: "Count the distinct groups or conditions in your study design. Each treatment arm or time point is one group.",
-    opts: [
-      {l:"1 group",  s:"Comparing a single sample to a known or hypothesized population value", n:"c1_norm"},
-      {l:"2 groups", s:"e.g. treatment vs control, male vs female, pre vs post (two time points)", n:"c2_rel"},
-      {l:"3 or more groups", s:"e.g. three dose levels, multiple visits, several disease subtypes", n:"c3_rel"}
-    ]
-  },
-  c1_norm: {
-    q: "Is the variable normally distributed in your sample?",
-    hint: "<strong>How to check:</strong> Shapiro-Wilk test (best for n &lt; 50); D'Agostino-Pearson test (n ≥ 50); or inspect a QQ plot and histogram. With n ≥ 100, mild non-normality matters less due to the Central Limit Theorem, but the normality test should still guide your choice.",
-    opts: [
-      {l:"Yes — normally distributed", s:"Shapiro-Wilk p > 0.05 and symmetric QQ plot / histogram", n:"onesamp_t"},
-      {l:"No — non-normal", s:"Shapiro-Wilk p ≤ 0.05, or clearly skewed / heavy-tailed distribution", n:"wilcox1"}
-    ]
-  },
-  c2_rel: {
-    q: "Are the two groups independent or paired / matched?",
-    hint: "<strong>Independent:</strong> different participants in each group (parallel-group RCT, case-control). <strong>Paired:</strong> same participant measured at two time points, or 1:1 matched case-control pairs.",
-    opts: [
-      {l:"Independent groups", s:"Different participants in each group; no natural pairing", n:"c2_ind_norm"},
-      {l:"Paired / Matched", s:"Same participants measured twice, or matched 1:1 on confounders", n:"c2_pair_norm"}
-    ]
-  },
-  c2_ind_norm: {
-    q: "Run Shapiro-Wilk separately in BOTH groups. What is the result?",
-    hint: "This step is critical. If <em>either</em> group fails normality (p ≤ 0.05), the t-test assumption is violated regardless of the other group's result. Switch to the non-parametric alternative.",
-    opts: [
-      {l:"Both groups pass normality", s:"Shapiro-Wilk p > 0.05 in both groups", n:"c2_ind_var"},
-      {l:"One or both groups fail normality", s:"Shapiro-Wilk p ≤ 0.05 in at least one group — parametric test not appropriate", n:"mwu"}
-    ]
-  },
-  c2_ind_var: {
-    q: "Check equality of variances between the two groups (Levene's test)",
-    hint: "Levene's test p > 0.05 indicates the two groups have comparable spread (homoscedasticity). This determines which variant of the t-test to use.",
-    opts: [
-      {l:"Equal variances — Levene's p > 0.05", s:"Standard homoscedasticity assumption is met", n:"student_t"},
-      {l:"Unequal variances — Levene's p ≤ 0.05", s:"Groups have significantly different spread", n:"welch_t"}
-    ]
-  },
-  c2_pair_norm: {
-    q: "Check normality of the within-pair DIFFERENCES",
-    hint: "Compute (post – pre) for each participant, then run Shapiro-Wilk on those difference values. It is the distribution of differences that matters, not the raw values.",
-    opts: [
-      {l:"Differences are normally distributed", s:"Shapiro-Wilk on difference scores p > 0.05", n:"paired_t"},
-      {l:"Differences are non-normal", s:"Shapiro-Wilk on difference scores p ≤ 0.05", n:"wilcox_pair"}
-    ]
-  },
-  c3_rel: {
-    q: "Are the groups independent or repeated measures?",
-    hint: "<strong>Repeated measures:</strong> the same participants appear in every condition (3+ time points, crossover trial). <strong>Independent:</strong> different participants in each group.",
-    opts: [
-      {l:"Independent groups", s:"Different participants in each of the 3+ groups", n:"c3_ind_norm"},
-      {l:"Repeated / Within-subject measures", s:"Same participants across all 3+ conditions or time points", n:"c3_rep_norm"}
-    ]
-  },
-  c3_ind_norm: {
-    q: "Check normality in ALL groups using Shapiro-Wilk",
-    hint: "A single non-normal group is sufficient to require the non-parametric alternative. Test each group separately.",
-    opts: [
-      {l:"All groups pass normality", s:"Shapiro-Wilk p > 0.05 in every group", n:"c3_ind_var"},
-      {l:"Any group fails normality", s:"At least one group has Shapiro-Wilk p ≤ 0.05", n:"kruskal"}
-    ]
-  },
-  c3_ind_var: {
-    q: "Check equality of variances across all groups (Levene's test)",
-    opts: [
-      {l:"Equal variances — Levene's p > 0.05", s:"Homoscedasticity met across all groups", n:"anova"},
-      {l:"Unequal variances — Levene's p ≤ 0.05", s:"Variance differs meaningfully between groups", n:"welch_anova"}
-    ]
-  },
-  c3_rep_norm: {
-    q: "Is the outcome normally distributed in each condition?",
-    hint: "<strong>Also check sphericity</strong> (Mauchly's test in SPSS/R). If sphericity is violated (Mauchly's p &lt; 0.05), apply Greenhouse-Geisser or Huynh-Feldt correction to the repeated-measures ANOVA.",
-    opts: [
-      {l:"Normal in all conditions", s:"Shapiro-Wilk p > 0.05 in each condition", n:"rm_anova"},
-      {l:"Non-normal in one or more conditions", s:"Shapiro-Wilk p ≤ 0.05", n:"friedman"}
-    ]
-  },
-  cat_type: {
-    q: "What kind of categorical outcome?",
-    opts: [
-      {l:"Binary or nominal categories", s:"Named categories without natural rank order: disease present/absent, blood type, treatment response", n:"cat_rel"},
-      {l:"Ordinal — ranked categories", s:"Ordered levels with unequal or unknown intervals: disease severity, pain scale, Likert", n:"ord_groups"}
-    ]
-  },
-  cat_rel: {
-    q: "Are the groups independent or paired / matched?",
-    opts: [
-      {l:"Independent groups", s:"Different participants in each group", n:"cat_grps"},
-      {l:"Paired / Matched", s:"Same participant measured at two time points, or 1:1 matched pairs", n:"mcnemar"}
-    ]
-  },
-  cat_grps: {
-    q: "How many groups are you comparing?",
-    opts: [
-      {l:"2 groups", s:"Standard 2 × 2 contingency table", n:"cat2_exp"},
-      {l:"3 or more groups", s:"Larger r × c contingency table", n:"cat_large"}
-    ]
-  },
-  cat2_exp: {
-    q: "Check the expected cell count in every cell of the 2 × 2 table",
-    hint: "<strong>How to compute:</strong> Expected = (row total × column total) ÷ grand total. Check all four cells. In Python: <code>chi2_contingency(table)</code> returns expected counts as its 3rd element.",
-    opts: [
-      {l:"All four expected counts ≥ 5", s:"Chi-square large-sample approximation is valid", n:"chi2"},
-      {l:"Any expected count < 5", s:"Chi-square assumption is violated — use the exact test", n:"fisher"}
-    ]
-  },
-  cat_large: {
-    q: "Do expected cell counts meet the chi-square assumption?",
-    hint: "Rule: ≥ 80% of cells must have expected count ≥ 5, and <strong>no</strong> cell may have expected count < 1. Check the expected counts from <code>chi2_contingency</code>.",
-    opts: [
-      {l:"Yes — assumption met", s:"≥ 80% of cells have expected count ≥ 5", n:"chi2_large"},
-      {l:"No — many small expected counts", s:"Consider collapsing categories or using an exact test", n:"collapse"}
-    ]
-  },
-  ord_groups: {
-    q: "How many groups are you comparing?",
-    opts: [
-      {l:"2 groups", s:"Compare ranks or ordinal scores between two independent groups", n:"mwu_ord"},
-      {l:"3 or more groups", s:"Compare ordinal scores across 3+ independent groups", n:"kruskal_ord"}
-    ]
-  },
-  corr_type: {
-    q: "What types of variables are you associating?",
-    opts: [
-      {l:"Two continuous variables", s:"e.g. age vs. creatinine, drug dose vs. biomarker level", n:"corr_norm"},
-      {l:"Two categorical variables", s:"Association between two nominal or binary variables", n:"cramers"},
-      {l:"Continuous vs. binary categorical", s:"e.g. BMI vs. diabetic yes/no, age vs. disease present/absent", n:"ptbis"}
-    ]
-  },
-  corr_norm: {
-    q: "Are both continuous variables normally distributed?",
-    hint: "Pearson's r assumes bivariate normality. Run Shapiro-Wilk on each variable individually. Also inspect a scatter plot to confirm the relationship is linear.",
-    opts: [
-      {l:"Both variables are normally distributed", s:"Shapiro-Wilk p > 0.05 for both", n:"pearson"},
-      {l:"Either variable is non-normal", s:"Use the rank-based, distribution-free alternative", n:"spearman"}
-    ]
-  },
-  multi_type: {
-    q: "What type is your outcome variable in the regression model?",
-    hint: "The outcome type determines which regression family to use. Each has its own assumptions and link function.",
-    opts: [
-      {l:"Continuous", s:"e.g. blood pressure, laboratory value, biomarker level", n:"linear_reg"},
-      {l:"Binary or categorical", s:"e.g. disease yes/no, death, treatment success", n:"log_reg"},
-      {l:"Count or rate", s:"e.g. number of relapses, infection events per 100 person-years", n:"count_reg"},
-      {l:"Survival / Time-to-event", s:"Time until an event with censored observations", n:"cox"}
-    ]
-  },
-  agree_type: {
-    q: "What type of measurements are you comparing?",
-    opts: [
-      {l:"Categorical ratings between two or more raters", s:"e.g. two pathologists grading tumour stage, two clinicians diagnosing disease", n:"kappa"},
-      {l:"Continuous measurements between two methods or raters", s:"e.g. two devices measuring blood pressure, two labs measuring creatinine", n:"agree_cont"}
-    ]
-  },
-  agree_cont: {
-    q: "What is your primary question about the continuous measurements?",
-    opts: [
-      {l:"Are the two methods / instruments clinically interchangeable?", s:"Do both methods give results close enough to be used in practice? → Bland-Altman analysis", n:"bland"},
-      {l:"How reproducible are repeated measurements from the same rater/method?", s:"Intra-rater or inter-rater consistency → Intraclass Correlation Coefficient (ICC)", n:"icc"}
-    ]
-  }
-};
+    // -------------------- PAGE SWITCHING --------------------
+    const statPage = document.getElementById('stat-page');
+    const mlPage = document.getElementById('ml-page');
+    const aboutInfo = document.getElementById('about-info');
+    const teamInfo = document.getElementById('team-info');
 
-// ── LEAF RECOMMENDATIONS ────────────────────────────────────────────────────
-const L = {
-  onesamp_t: {
-    name:"One-sample t-test", cat:"Parametric", color:"indigo",
-    brief:"Compares the mean of a single sample to a known or hypothesized population value.",
-    use:["You have one group and want to test whether its mean equals a specific value (e.g. normal reference value, μ₀ = 0)","The variable is continuous and normally distributed"],
-    assume:["Continuous outcome measured on an interval or ratio scale","Sample is drawn from a normally distributed population","Observations are independent (one value per subject)"],
-    py:`from scipy.stats import ttest_1samp\nstat, p = ttest_1samp(data, popmean=μ₀)`,
-    r:`t.test(data, mu = μ₀)`,
-    report:["t(df) = value, p = value","Mean (SD) of sample vs hypothesized value","Cohen's d = (sample mean − μ₀) / SD"],
-    effect:"Cohen's d — small: 0.2, medium: 0.5, large: 0.8",
-    posthoc:null,
-    warn:null
-  },
-  wilcox1: {
-    name:"Wilcoxon signed-rank test (one-sample)", cat:"Non-parametric", color:"teal",
-    brief:"Non-parametric alternative to the one-sample t-test when the variable is non-normal.",
-    use:["Continuous or ordinal outcome that is non-normally distributed","You want to test whether the median equals a hypothesized value (e.g. μ₀ = 0)"],
-    assume:["Distribution is continuous and roughly symmetric around the median","Observations are independent","No assumption of normality"],
-    py:`from scipy.stats import wilcoxon\nstat, p = wilcoxon(data - μ₀)`,
-    r:`wilcox.test(data, mu = μ₀)`,
-    report:["W-statistic, p-value","Median (IQR) of sample vs hypothesized value","r = Z / √n as effect size"],
-    effect:"r = Z / √n — small: 0.1, medium: 0.3, large: 0.5",
-    posthoc:null, warn:null
-  },
-  mwu: {
-    name:"Mann-Whitney U test", cat:"Non-parametric", color:"teal",
-    brief:"Compares two independent groups on a continuous or ordinal outcome without assuming normality.",
-    use:["Two independent groups on a continuous or ordinal outcome","One or both groups fail the normality assumption (Shapiro-Wilk p ≤ 0.05)","Outcome contains outliers that would distort a mean-based test"],
-    assume:["Two independent samples","Outcome is continuous or at least ordinal (can be ranked)","No assumption of normality required"],
-    py:`from scipy.stats import mannwhitneyu\nstat, p = mannwhitneyu(g1, g2, alternative='two-sided')`,
-    r:`wilcox.test(g1, g2, paired = FALSE)`,
-    report:["U-statistic, p-value","Median (IQR) per group — not mean ± SD","r = Z / √N as effect size"],
-    effect:"r = Z / √N — small: 0.1, medium: 0.3, large: 0.5",
-    posthoc:null,
-    warn:"When normality fails, always report median (IQR) as the descriptive summary, not mean ± SD. The mean can be misleading for non-normal data."
-  },
-  student_t: {
-    name:"Student's independent t-test", cat:"Parametric", color:"indigo",
-    brief:"Compares the means of two independent normally-distributed groups with equal variances.",
-    use:["Two independent groups, continuous outcome","Both groups pass normality test","Groups have similar variances (Levene's p > 0.05)"],
-    assume:["Normal distribution in both groups","Equal variances (homoscedasticity)","Independence of observations"],
-    py:`from scipy.stats import ttest_ind\nstat, p = ttest_ind(g1, g2, equal_var=True)`,
-    r:`t.test(g1, g2, var.equal = TRUE)`,
-    report:["t(df) = value, p = value","Mean ± SD per group","Cohen's d"],
-    effect:"Cohen's d — small: 0.2, medium: 0.5, large: 0.8",
-    posthoc:null, warn:null
-  },
-  welch_t: {
-    name:"Welch's independent t-test", cat:"Parametric", color:"indigo",
-    brief:"Compares two independent groups when variances are unequal. Recommended as the default two-sample t-test.",
-    use:["Two independent groups, continuous and normally-distributed outcome","Variances differ significantly between groups (Levene's p ≤ 0.05)","Often preferred as the default because the penalty for using it when variances are equal is minimal"],
-    assume:["Normal distribution in both groups","Independence of observations","Variances may differ (Welch correction adjusts degrees of freedom)"],
-    py:`from scipy.stats import ttest_ind\nstat, p = ttest_ind(g1, g2, equal_var=False)`,
-    r:`t.test(g1, g2, var.equal = FALSE)  # default in R`,
-    report:["t(df) = value, p = value (df will be non-integer with Welch correction)","Mean ± SD per group","Cohen's d"],
-    effect:"Cohen's d — small: 0.2, medium: 0.5, large: 0.8",
-    posthoc:null, warn:null
-  },
-  paired_t: {
-    name:"Paired t-test", cat:"Parametric", color:"indigo",
-    brief:"Compares a continuous outcome at two time points in the same participants, when within-pair differences are normally distributed.",
-    use:["Same participants measured before and after an intervention","1:1 matched case-control pairs","Within-pair differences are approximately normally distributed"],
-    assume:["Differences between pairs are approximately normally distributed","Each pair is independent of all other pairs","Outcome is continuous"],
-    py:`from scipy.stats import ttest_rel\nstat, p = ttest_rel(before, after)`,
-    r:`t.test(before, after, paired = TRUE)`,
-    report:["t(df) = value, p = value","Mean difference ± SD with 95% CI","Cohen's d_z = mean difference / SD of differences"],
-    effect:"Cohen's d_z — small: 0.2, medium: 0.5, large: 0.8",
-    posthoc:null, warn:null
-  },
-  wilcox_pair: {
-    name:"Wilcoxon signed-rank test (paired)", cat:"Non-parametric", color:"teal",
-    brief:"Non-parametric alternative to the paired t-test when within-pair differences are non-normal.",
-    use:["Same participants measured twice (pre/post) or matched pairs","Within-pair differences fail normality","Outcome is ordinal or continuous with outliers"],
-    assume:["Within-pair differences can be ranked (continuous or ordinal outcome)","Each pair is independent of all other pairs","No assumption of normality required"],
-    py:`from scipy.stats import wilcoxon\nstat, p = wilcoxon(before, after)`,
-    r:`wilcox.test(before, after, paired = TRUE)`,
-    report:["W-statistic, p-value","Median difference with IQR","r = Z / √N"],
-    effect:"r = Z / √N — small: 0.1, medium: 0.3, large: 0.5",
-    posthoc:null, warn:null
-  },
-  anova: {
-    name:"One-way ANOVA", cat:"Parametric", color:"indigo",
-    brief:"Compares the means of three or more independent groups when normality and equal variances are met.",
-    use:["3+ independent groups, continuous outcome","All groups pass normality test","Variances are equal across groups (Levene's p > 0.05)"],
-    assume:["Normal distribution in each group","Equal variances (homoscedasticity) — Levene's test","Independence of observations"],
-    py:`from scipy.stats import f_oneway\nF, p = f_oneway(g1, g2, g3)`,
-    r:`summary(aov(outcome ~ group, data = df))`,
-    report:["F(df_between, df_within) = value, p = value","Mean ± SD per group","η² or ω² (partial) as effect size"],
-    effect:"η² — small: 0.01, medium: 0.06, large: 0.14",
-    posthoc:"Required if p < 0.05: <strong>Tukey HSD</strong> (all pairwise comparisons), <strong>Bonferroni</strong> (conservative), or <strong>Dunnett's</strong> (each group vs one control). Use Python: <code>pingouin.pairwise_tukey()</code> or R: <code>TukeyHSD(aov(...))</code>.",
-    warn:null
-  },
-  welch_anova: {
-    name:"Welch's one-way ANOVA", cat:"Parametric", color:"indigo",
-    brief:"Extension of ANOVA for 3+ groups when variances are unequal between groups.",
-    use:["3+ independent groups, normally distributed continuous outcome","Variances are unequal (Levene's p ≤ 0.05)"],
-    assume:["Normal distribution in each group","Variances may differ (Welch correction adjusts)","Independence"],
-    py:`import pingouin as pg\nresult = pg.welch_anova(dv='outcome', between='group', data=df)`,
-    r:`oneway.test(outcome ~ group, data = df, var.equal = FALSE)`,
-    report:["F(df) = value, p = value","Mean ± SD per group","η²"],
-    effect:"η² — small: 0.01, medium: 0.06, large: 0.14",
-    posthoc:"Post-hoc if significant: <strong>Games-Howell test</strong> (does not assume equal variance). Python: <code>pingouin.pairwise_gameshowell()</code> | R: <code>rstatix::games_howell_test()</code>.",
-    warn:null
-  },
-  kruskal: {
-    name:"Kruskal-Wallis test", cat:"Non-parametric", color:"teal",
-    brief:"Non-parametric alternative to one-way ANOVA for 3+ independent groups when normality cannot be assumed.",
-    use:["3+ independent groups, continuous or ordinal outcome","At least one group fails normality","Data contain substantial outliers"],
-    assume:["Independent samples","Outcome is continuous or at least ordinal (can be ranked)","No normality assumption"],
-    py:`from scipy.stats import kruskal\nH, p = kruskal(g1, g2, g3)`,
-    r:`kruskal.test(outcome ~ group, data = df)`,
-    report:["H(df) = value, p = value","Median (IQR) per group","ε² (epsilon-squared) as effect size: H / (n²−1)/(n+1)"],
-    effect:"ε² — small: 0.01, medium: 0.06, large: 0.14",
-    posthoc:"Required if p < 0.05: <strong>Dunn's test</strong> with Bonferroni or Benjamini-Hochberg FDR correction. Python: <code>scikit_posthocs.posthoc_dunn()</code> | R: <code>dunn.test::dunn.test()</code>.",
-    warn:null
-  },
-  rm_anova: {
-    name:"Repeated-measures ANOVA", cat:"Parametric", color:"indigo",
-    brief:"Compares a normally-distributed outcome across 3+ repeated measurements in the same participants.",
-    use:["Same participants measured at 3+ time points or conditions","Continuous normally-distributed outcome","Cross-over trial or longitudinal design"],
-    assume:["Normal distribution at each time point","Sphericity (Mauchly's test) — if violated, apply Greenhouse-Geisser or Huynh-Feldt correction","Independence of participants"],
-    py:`import pingouin as pg\nresult = pg.rm_anova(dv='outcome', within='time', subject='id', data=df)`,
-    r:`ez::ezANOVA(data=df, dv=outcome, wid=id, within=time)`,
-    report:["F(df) = value, p = value (with sphericity correction if needed)","Mean ± SD per time point","η²_p (partial eta-squared)"],
-    effect:"η²_p — small: 0.01, medium: 0.06, large: 0.14",
-    posthoc:"Post-hoc: pairwise paired t-tests with Bonferroni correction. Python: <code>pingouin.pairwise_tests(parametric=True, padjust='bonf')</code>.",
-    warn:null
-  },
-  friedman: {
-    name:"Friedman test", cat:"Non-parametric", color:"teal",
-    brief:"Non-parametric alternative to repeated-measures ANOVA when the outcome is non-normal in one or more conditions.",
-    use:["Same participants measured at 3+ time points or conditions","Continuous or ordinal outcome, non-normally distributed","Cross-over or longitudinal design"],
-    assume:["Related samples (same participants)","Outcome is at least ordinal","No normality assumption"],
-    py:`from scipy.stats import friedmanchisquare\nstat, p = friedmanchisquare(t1, t2, t3)`,
-    r:`friedman.test(as.matrix(df))`,
-    report:["χ²(df) = value, p = value","Median (IQR) per time point","Kendall's W as effect size"],
-    effect:"Kendall's W — small: 0.1, medium: 0.3, large: 0.5",
-    posthoc:"Post-hoc if significant: pairwise Wilcoxon signed-rank tests with Bonferroni correction. R: <code>pairwise.wilcox.test(paired=TRUE, p.adjust='bonf')</code>.",
-    warn:null
-  },
-  chi2: {
-    name:"Chi-square test (2 × 2)", cat:"Categorical", color:"violet",
-    brief:"Tests whether two binary variables are statistically independent in a 2 × 2 table.",
-    use:["Two binary or nominal variables, two independent groups","All four expected cell counts are ≥ 5","Goal: test association or independence, not causality"],
-    assume:["Independent observations (one row per subject)","All expected cell counts ≥ 5","Fixed sample size"],
-    py:`from scipy.stats import chi2_contingency\nchi2, p, dof, expected = chi2_contingency(table, correction=False)`,
-    r:`chisq.test(table, correct = FALSE)`,
-    report:["χ²(1) = value, p = value","Counts and row/column percentages per cell","Phi coefficient (φ) as effect size for 2×2"],
-    effect:"Phi (φ) = √(χ²/n) — small: 0.1, medium: 0.3, large: 0.5",
-    posthoc:null,
-    warn:"Yates' continuity correction (correction=True in Python) is sometimes applied to 2×2 tables with small n (&lt; 40) or expected counts near 5, though its use is debated. Consider Fisher's exact as an alternative in borderline cases."
-  },
-  fisher: {
-    name:"Fisher's exact test", cat:"Categorical", color:"violet",
-    brief:"Exact test of independence in a 2 × 2 table when any expected cell count is less than 5.",
-    use:["2 × 2 contingency table with any expected cell count < 5","Small samples where chi-square approximation breaks down","Case-control studies with rare exposures or outcomes"],
-    assume:["Independent observations","Fixed marginal totals (conditioning on margins)","No assumption about expected cell counts"],
-    py:`from scipy.stats import fisher_exact\nOR, p = fisher_exact(table)`,
-    r:`fisher.test(table)`,
-    report:["Exact p-value","Odds ratio (OR) with exact 95% CI","Counts and percentages"],
-    effect:"Odds ratio (OR) — 1.0 = no effect; |log(OR)| > 0.2 small, > 0.5 medium, > 0.8 large",
-    posthoc:null,
-    warn:"If running Fisher's exact test for multiple outcomes simultaneously (e.g. 7 side-effect comparisons), apply a multiple testing correction. Bonferroni threshold: α/k. Without correction, the family-wise error rate rises to ~30% for 7 tests."
-  },
-  mcnemar: {
-    name:"McNemar's test", cat:"Categorical", color:"violet",
-    brief:"Tests whether a binary outcome changes significantly between two paired measurements in the same participants.",
-    use:["Binary outcome measured in the same participants at two time points (before/after)","1:1 matched case-control pairs comparing exposure status","Goal: detect net change in the proportion of positive responses"],
-    assume:["Paired binary data","Only the discordant pairs (changed 0→1 or 1→0) contribute to the test","Pairs are independent of each other"],
-    py:`from statsmodels.stats.contingency_tables import mcnemar\nresult = mcnemar(table, exact=True)`,
-    r:`mcnemar.test(table)`,
-    report:["McNemar χ²(1) or exact p-value","Discordant pair counts (b and c)","McNemar OR = c/b (ratio of discordant pairs)"],
-    effect:"McNemar OR or McNemar's statistic",
-    posthoc:"For 3+ time points with paired binary data, use <strong>Cochran's Q test</strong>. R: <code>RVAideMemoire::cochran.qtest()</code>.",
-    warn:null
-  },
-  chi2_large: {
-    name:"Chi-square test (r × c table)", cat:"Categorical", color:"violet",
-    brief:"Tests independence between two categorical variables when at least one has 3 or more categories.",
-    use:["Two categorical variables with 3+ categories in one or both","≥ 80% of expected cell counts are ≥ 5, no cell < 1","Goal: overall test of independence across the full table"],
-    assume:["Independent observations","≥ 80% of cells have expected count ≥ 5","No cell has expected count < 1"],
-    py:`from scipy.stats import chi2_contingency\nchi2, p, dof, expected = chi2_contingency(table)`,
-    r:`chisq.test(table)`,
-    report:["χ²(df) = value, p = value","Counts and percentages per cell","Cramér's V as effect size"],
-    effect:"Cramér's V = √(χ²/(n × (min(r,c)−1))) — small: 0.1, medium: 0.3, large: 0.5",
-    posthoc:"If significant, examine <strong>standardized Pearson residuals</strong> to identify which cells drive the association (|residual| > 2 is conventionally noteworthy). For 2×k or k×2 tables, follow up with pairwise Fisher/chi-square tests with Bonferroni correction.",
-    warn:null
-  },
-  collapse: {
-    name:"Collapse categories → re-run Chi-square", cat:"Categorical", color:"violet",
-    brief:"When many expected counts are less than 5, chi-square is unreliable. Combine categories to meet assumptions.",
-    use:["Large contingency table with many small expected counts","Combining categories is clinically meaningful (e.g. mild + moderate → non-severe)","Alternative: Freeman-Halton exact test for larger tables"],
-    assume:["Category collapsing must be clinically justified before examining results","After collapsing, re-verify that expected count assumption is met"],
-    py:`# Rebuild table after collapsing, then:\nchi2, p, dof, expected = chi2_contingency(collapsed_table)`,
-    r:`# Rebuild matrix, then:\nchisq.test(collapsed_table)`,
-    report:["χ²(df) = value, p = value after collapsing","Document rationale for category merging","Cramér's V as effect size"],
-    effect:"Cramér's V",
-    posthoc:null,
-    warn:"Decide which categories to merge based on clinical rationale BEFORE examining the data. Post-hoc, data-driven collapsing inflates Type I error and constitutes a form of p-hacking."
-  },
-  mwu_ord: {
-    name:"Mann-Whitney U test", cat:"Non-parametric", color:"teal",
-    brief:"Compares ordinal or ranked data between two independent groups.",
-    use:["Ordinal outcome (e.g. pain severity, disease grade) across two independent groups","Also correct for continuous non-normal data (same test)","Tests whether one group's values tend to be ranked higher than the other"],
-    assume:["Two independent samples","Outcome is at least ordinal (can be meaningfully ranked)","No normality assumption"],
-    py:`from scipy.stats import mannwhitneyu\nstat, p = mannwhitneyu(g1, g2, alternative='two-sided')`,
-    r:`wilcox.test(g1, g2, paired = FALSE)`,
-    report:["U-statistic, p-value","Median (IQR) per group","r = Z / √N"],
-    effect:"r = Z / √N — small: 0.1, medium: 0.3, large: 0.5",
-    posthoc:null, warn:null
-  },
-  kruskal_ord: {
-    name:"Kruskal-Wallis test", cat:"Non-parametric", color:"teal",
-    brief:"Compares ordinal or ranked data across three or more independent groups.",
-    use:["Ordinal outcome across 3+ independent groups","Non-normal continuous data across 3+ groups"],
-    assume:["Independent groups","Outcome is at least ordinal","No normality assumption"],
-    py:`from scipy.stats import kruskal\nH, p = kruskal(g1, g2, g3)`,
-    r:`kruskal.test(outcome ~ group, data = df)`,
-    report:["H(df) = value, p = value","Median (IQR) per group","ε² as effect size"],
-    effect:"ε² — small: 0.01, medium: 0.06, large: 0.14",
-    posthoc:"If significant: Dunn's test with Bonferroni or FDR correction. Python: <code>scikit_posthocs.posthoc_dunn()</code>.",
-    warn:null
-  },
-  pearson: {
-    name:"Pearson's r (correlation)", cat:"Correlation", color:"blue",
-    brief:"Measures the strength and direction of the linear association between two normally-distributed continuous variables.",
-    use:["Two continuous variables, both approximately normally distributed","Relationship is expected to be linear (confirm with scatter plot)","No extreme outliers"],
-    assume:["Both variables are continuous and approximately normally distributed","Relationship is linear","No major outliers (Pearson's r is sensitive to outliers)"],
-    py:`from scipy.stats import pearsonr\nr, p = pearsonr(x, y)`,
-    r:`cor.test(x, y, method = 'pearson')`,
-    report:["r = value (−1 to +1), p = value","95% CI for r (using Fisher's z transformation)","Always include scatter plot"],
-    effect:"r — small: 0.1, medium: 0.3, large: 0.5",
-    posthoc:null,
-    warn:"Always inspect the scatter plot before interpreting r. Pearson's r measures LINEAR association only — a high r with a curved scatter is misleading. Anscombe's quartet demonstrates that identical r values can arise from very different data."
-  },
-  spearman: {
-    name:"Spearman's ρ (rank correlation)", cat:"Correlation", color:"blue",
-    brief:"Measures the monotonic (not necessarily linear) association between two variables using ranks. Distribution-free.",
-    use:["Two variables where one or both are non-normal","Ordinal variables","Data contain outliers","When you cannot confirm a linear relationship"],
-    assume:["Both variables are at least ordinal","Association is monotonic (consistently increasing or decreasing)","No requirement for normality"],
-    py:`from scipy.stats import spearmanr\nrho, p = spearmanr(x, y)`,
-    r:`cor.test(x, y, method = 'spearman')`,
-    report:["ρ = value (−1 to +1), p = value","Scatter plot with LOWESS smoother"],
-    effect:"ρ — small: 0.1, medium: 0.3, large: 0.5",
-    posthoc:null,
-    warn:"Spearman's ρ detects monotonic but not non-monotonic associations. If you suspect a U-shaped relationship, ρ ≈ 0 even when the association is strong. Examine the scatter plot."
-  },
-  cramers: {
-    name:"Chi-square + Cramér's V", cat:"Correlation", color:"blue",
-    brief:"Tests independence and quantifies the strength of association between two categorical variables.",
-    use:["Two categorical (nominal or ordinal) variables","Goal: assess whether and how strongly the two variables co-vary","Works for any r × c table size"],
-    assume:["Same as chi-square: ≥ 80% of expected counts ≥ 5"],
-    py:`from scipy.stats import chi2_contingency\nimport numpy as np\nchi2, p, dof, exp = chi2_contingency(table)\nV = np.sqrt(chi2 / (n * (min(r, c) - 1)))`,
-    r:`library(rstatix)\ncramer_v(table)`,
-    report:["χ²(df) = value, p = value","Cramér's V = value (0 to 1)"],
-    effect:"Cramér's V — small: 0.1, medium: 0.3, large: 0.5 (thresholds depend on df)",
-    posthoc:null, warn:null
-  },
-  ptbis: {
-    name:"Point-biserial correlation", cat:"Correlation", color:"blue",
-    brief:"Measures the association between a continuous variable and a naturally dichotomous binary variable (0/1).",
-    use:["One continuous and one binary (truly dichotomous) variable","e.g. age vs disease present/absent, BMI vs survival yes/no"],
-    assume:["Binary variable is naturally dichotomous — not artificially cut","Continuous variable is approximately normally distributed within each group","Equivalent to Pearson's r with the binary variable coded 0/1"],
-    py:`from scipy.stats import pointbiserialr\nr_pb, p = pointbiserialr(binary_var, continuous_var)`,
-    r:`# Equivalent to:\ncor.test(binary_var, continuous_var, method='pearson')`,
-    report:["r_pb = value, p = value","Means of the continuous variable in each binary group"],
-    effect:"r_pb — same benchmarks as Pearson's r: 0.1 / 0.3 / 0.5",
-    posthoc:null,
-    warn:"If the continuous variable is non-normal, comparing the two groups with <strong>Mann-Whitney U</strong> is more appropriate than point-biserial correlation."
-  },
-  linear_reg: {
-    name:"Linear regression", cat:"Regression", color:"amber",
-    brief:"Models a continuous outcome as a linear function of one or more predictors, with adjustment for confounders.",
-    use:["Continuous outcome, one or more continuous or categorical predictors","Adjust the effect of a primary predictor for potential confounders","Predict the value of the outcome from known predictor values"],
-    assume:["Linearity: outcome is linearly related to each predictor","Independence of residuals","Homoscedasticity: constant variance of residuals across fitted values","Normality of residuals (not of raw data)","No severe multicollinearity between predictors"],
-    py:`import statsmodels.formula.api as smf\nmodel = smf.ols('outcome ~ predictor + covariate', data=df).fit()\nprint(model.summary())`,
-    r:`model <- lm(outcome ~ predictor + covariate, data = df)\nsummary(model)`,
-    report:["β coefficients with 95% CI and p-values per predictor","R² and adjusted R² (model fit)","Standardized β for effect size comparison across predictors"],
-    effect:"R² (proportion of variance explained); Cohen's f² = R²/(1−R²) — small: 0.02, medium: 0.15, large: 0.35",
-    posthoc:null,
-    warn:"Check all four regression assumptions with diagnostic plots: residuals vs. fitted (linearity + homoscedasticity), QQ plot of residuals (normality), scale-location plot (homoscedasticity), leverage plot (influential observations)."
-  },
-  log_reg: {
-    name:"Logistic regression", cat:"Regression", color:"amber",
-    brief:"Models the probability of a binary outcome as a function of one or more predictors, producing adjusted odds ratios.",
-    use:["Binary outcome (0/1, disease yes/no, event yes/no)","One or more predictors; adjust for confounders","Report adjusted ORs from an observational study or RCT"],
-    assume:["Binary outcome","No multicollinearity between predictors","Sufficient events per variable (EPV ≥ 10 recommended — 10 events in the smaller outcome category per predictor)","Linearity of continuous predictors with log-odds (check with restricted cubic splines or Box-Tidwell test)"],
-    py:`import statsmodels.api as sm\nX = sm.add_constant(df[['predictor','covariate']])\nmodel = sm.Logit(df['outcome'], X).fit()\nprint(model.summary())`,
-    r:`model <- glm(outcome ~ predictor + covariate, data=df, family=binomial)\nsummary(model); exp(coef(model))  # for ORs`,
-    report:["Adjusted OR per predictor with 95% CI and p-value","Nagelkerke R² or Hosmer-Lemeshow goodness-of-fit","ROC AUC (discrimination)"],
-    effect:"OR: 1.5 = small, 3.5 = medium, 9 = large (Chen et al. 2010); AUC: 0.7–0.8 acceptable, > 0.8 good",
-    posthoc:null,
-    warn:"Check for separation (a predictor perfectly predicts the outcome — causes inflated ORs with wide CIs). With small samples, use Firth's penalized likelihood regression."
-  },
-  count_reg: {
-    name:"Poisson or Negative Binomial regression", cat:"Regression", color:"amber",
-    brief:"Models count or rate outcomes (events per unit time or person) as a function of predictors.",
-    use:["Outcome is a count (number of relapses, hospital visits, adverse events)","Outcome is a rate (events per 100 person-years)","Continuous positive outcome with a right-skewed distribution"],
-    assume:["Poisson: mean = variance (equidispersion). Test with Pearson χ²/df ≈ 1","Negative Binomial: variance > mean (overdispersion — more common in practice)","Observations are independent","Include log(follow-up time) as an offset for rate models"],
-    py:`import statsmodels.api as sm\n# Poisson:\nmodel = sm.GLM(y, X, family=sm.families.Poisson(),\n               offset=np.log(time)).fit()\n# Negative Binomial:\nmodel = sm.GLM(y, X, family=sm.families.NegativeBinomial()).fit()`,
-    r:`# Poisson:\nglm(count ~ predictor, family=poisson, offset=log(time))\n# Negative Binomial:\nMASS::glm.nb(count ~ predictor + offset(log(time)))`,
-    report:["Incidence rate ratio (IRR) with 95% CI and p-value per predictor","Test for overdispersion before choosing Poisson vs. Negative Binomial"],
-    effect:"IRR: 1.5 = small, 3.5 = medium, 9 = large",
-    posthoc:null,
-    warn:"Always test for overdispersion first. If Pearson χ²/df >> 1, Poisson underestimates standard errors — use Negative Binomial or quasi-Poisson."
-  },
-  cox: {
-    name:"Cox proportional hazards regression", cat:"Survival", color:"slate",
-    brief:"Models time-to-event data while adjusting for covariates, producing adjusted hazard ratios.",
-    use:["Time-to-event outcome with right-censored observations","Adjust the effect of an exposure on survival for confounders","Compare two or more groups on survival while controlling for covariates"],
-    assume:["Proportional hazards: the hazard ratio between groups is constant over follow-up time — verify with Schoenfeld residuals or log-log survival plots","Non-informative censoring","Linearity of continuous predictors with log-hazard"],
-    py:`from lifelines import CoxPHFitter\ncph = CoxPHFitter()\ncph.fit(df, duration_col='time', event_col='event')\ncph.print_summary()`,
-    r:`library(survival)\nmodel <- coxph(Surv(time, event) ~ predictor + covariate, data=df)\nsummary(model)`,
-    report:["Adjusted HR with 95% CI and p-value per predictor","C-index (discrimination)","Test proportional hazards assumption"],
-    effect:"HR: 1.5 = small, 3.5 = medium, 9 = large; C-index: 0.7–0.8 acceptable, > 0.8 good",
-    posthoc:null,
-    warn:"If the proportional hazards assumption is violated, consider time-stratified Cox, time-varying covariates, or reporting restricted mean survival time (RMST) differences instead of HRs."
-  },
-  kappa: {
-    name:"Cohen's kappa (κ)", cat:"Agreement", color:"rose",
-    brief:"Quantifies agreement between two or more raters on categorical ratings, corrected for chance agreement.",
-    use:["Two or more raters independently classify subjects into the same set of categories","Categories are nominal (unweighted κ) or ordinal (weighted κ for ordered categories)","e.g. two pathologists grading tumour stage; two clinicians diagnosing disease severity"],
-    assume:["Each subject is rated independently by each rater","Raters use the same set of categories","No missing ratings"],
-    py:`from sklearn.metrics import cohen_kappa_score\nkappa = cohen_kappa_score(rater1, rater2, weights=None)  # or weights='linear'`,
-    r:`library(irr)\nkappa2(cbind(rater1, rater2), weight='unweighted')  # or weight='equal'`,
-    report:["κ = value with 95% CI","Percentage of raw agreement","Interpretation: κ < 0.20 slight, 0.21–0.40 fair, 0.41–0.60 moderate, 0.61–0.80 substantial, > 0.80 almost perfect"],
-    effect:"κ value directly serves as the effect measure",
-    posthoc:null,
-    warn:"Kappa is affected by prevalence (proportion of positive ratings). A high raw agreement can produce a low κ if one category is rare. Consider reporting both κ and raw agreement, or use the PABAK statistic (prevalence-adjusted bias-adjusted kappa)."
-  },
-  bland: {
-    name:"Bland-Altman analysis", cat:"Agreement", color:"rose",
-    brief:"Assesses whether two measurement methods or instruments are clinically interchangeable by analysing the differences between them.",
-    use:["Two continuous measurement methods applied to the same subjects","Goal: determine if the methods agree closely enough to be used interchangeably in clinical practice","e.g. two devices measuring blood oxygen saturation, two labs measuring serum creatinine"],
-    assume:["Both methods measure the same underlying quantity","Differences should be approximately normally distributed","The mean difference and its variability should not change with the magnitude of the measurement (if they do, log-transform the data)"],
-    py:`import numpy as np, matplotlib.pyplot as plt\nmean = (m1 + m2) / 2\ndiff = m1 - m2\nbias = diff.mean()\nloa = 1.96 * diff.std()\nplt.scatter(mean, diff); plt.axhline(bias); plt.axhline(bias+loa); plt.axhline(bias-loa)`,
-    r:`library(BlandAltmanLeh)\nbland.altman.plot(m1, m2)`,
-    report:["Bias = mean difference with 95% CI","Limits of Agreement (LoA) = bias ± 1.96 × SD of differences","Pre-specify a clinically acceptable difference threshold and compare LoA against it"],
-    effect:"The width of the LoA relative to the clinically acceptable threshold determines whether methods can be used interchangeably",
-    posthoc:null,
-    warn:"Do NOT use Pearson's r or an intraclass correlation to assess method agreement. High correlation does not imply agreement — two methods with proportional bias can be highly correlated while systematically disagreeing."
-  },
-  icc: {
-    name:"Intraclass Correlation Coefficient (ICC)", cat:"Agreement", color:"rose",
-    brief:"Quantifies the reliability (consistency and reproducibility) of continuous measurements from the same rater/method repeated over time or across multiple raters.",
-    use:["Assess test-retest reliability of a continuous measure (same rater, two occasions)","Assess inter-rater reliability for continuous ratings","Assess consistency across multiple sites or laboratories"],
-    assume:["Continuous measurements","Appropriate ICC model selected based on design (one-way vs two-way, consistency vs absolute agreement)","Use ICC(2,1) or ICC(3,1) for most biomedical reliability studies"],
-    py:`import pingouin as pg\nicc = pg.intraclass_corr(data=df, targets='subject', raters='rater', ratings='score')`,
-    r:`library(irr)\nicc(ratings_matrix, model='twoway', type='consistency')`,
-    report:["ICC with 95% CI","ICC < 0.50 poor, 0.50–0.75 moderate, 0.75–0.90 good, > 0.90 excellent (Koo & Mae, 2016)"],
-    effect:"ICC value directly serves as the reliability estimate",
-    posthoc:null,
-    warn:"There are six ICC formulas — choose the correct one for your design. Key decisions: (1) one-way vs two-way random/mixed effects; (2) consistency vs absolute agreement; (3) single measures vs average of k measures. Report which ICC model you used."
-  },
-  surv_leaf: {
-    name:"Kaplan-Meier + Log-rank test", cat:"Survival", color:"slate",
-    brief:"Estimates and compares survival functions between groups using non-parametric methods that correctly handle censored observations.",
-    use:["Time from a defined start point until an event (death, relapse, recovery, failure)","Some participants did not experience the event by study end (censored observations)","Group comparison without covariate adjustment — for adjusted analysis proceed to Cox regression"],
-    assume:["Non-informative censoring: participants who are censored have the same subsequent event risk as those remaining under observation","Survival curves do not cross substantially (proportional hazards) — if they cross, log-rank test is inappropriate; use Renyi or Peto test instead"],
-    py:`from lifelines import KaplanMeierFitter, logrank_test\nkmf = KaplanMeierFitter().fit(T, E, label='Group 1')\nresults = logrank_test(T1, T2, event_observed_A=E1, event_observed_B=E2)`,
-    r:`library(survival); library(survminer)\nfit <- survfit(Surv(time, event) ~ group, data=df)\nsurvdiff(Surv(time, event) ~ group, data=df)  # log-rank`,
-    report:["Median survival with 95% CI per group","Log-rank χ²(1) = value, p = value","Kaplan-Meier survival plot with number-at-risk table"],
-    effect:"HR from log-rank test or from Cox regression; HR small: 1.5, medium: 3.5, large: 9",
-    posthoc:"For adjusted survival analysis (controlling for confounders) or continuous predictors of survival, proceed to <strong>Cox proportional hazards regression</strong>.",
-    warn:null
-  },
-  diag_leaf: {
-    name:"Diagnostic test accuracy analysis", cat:"Diagnostic", color:"emerald",
-    brief:"Evaluates the performance of a diagnostic test or biomarker against a reference standard (gold standard).",
-    use:["You have a new test or biomarker and want to know how well it identifies true cases","Binary outcome: diseased / not diseased (verified by gold standard)","Outcomes: sensitivity, specificity, PPV, NPV, likelihood ratios, ROC, AUC"],
-    assume:["A valid, independent gold standard exists","Test and gold standard applied to all participants (or verified absence of verification bias)","Study population reflects the clinical population of interest (affects PPV and NPV via prevalence)"],
-    py:`from sklearn.metrics import roc_auc_score, roc_curve\nfrom sklearn.metrics import confusion_matrix, classification_report\nfpr, tpr, thresholds = roc_curve(y_true, y_score)\nauc = roc_auc_score(y_true, y_score)`,
-    r:`library(pROC)\nroc_obj <- roc(response, predictor)\nauc(roc_obj); ci.auc(roc_obj)\nplot(roc_obj)`,
-    report:["Sensitivity = TP / (TP + FN) with 95% CI","Specificity = TN / (TN + FP) with 95% CI","PPV and NPV (report at the prevalence of your study population)","LR+ = Sensitivity / (1 − Specificity); LR− = (1 − Sensitivity) / Specificity","AUC with 95% CI; ROC curve"],
-    effect:"AUC: 0.7–0.8 acceptable, 0.8–0.9 excellent, > 0.9 outstanding",
-    posthoc:null,
-    warn:"PPV and NPV depend heavily on disease prevalence. A test with Sensitivity = 90% and Specificity = 90% has PPV = 50% in a population with 10% prevalence. Always report the study prevalence alongside PPV and NPV."
-  }
-};
-
-// ── STATE ────────────────────────────────────────────────────────────────────
-let history = [], current = 'start';
-const MAX_DEPTH = 7;
-
-// ── RENDER ───────────────────────────────────────────────────────────────────
-function render() {
-  const isNode = !!T[current];
-  const isLeaf = !!L[current];
-  const depth = history.length;
-  const pct  = isLeaf ? 100 : Math.max(8, Math.min(90, (depth / MAX_DEPTH) * 88));
-
-  // Progress
-  document.getElementById('prog-fill').style.width = pct + '%';
-  document.getElementById('prog-label').textContent = isLeaf ? 'Recommendation ready' : (depth === 0 ? 'Choose your analysis type' : 'Continue narrowing your selection');
-  document.getElementById('prog-step').textContent = isLeaf ? 'Complete' : 'Step ' + (depth + 1);
-
-  // Legend: hide after first choice
-  document.getElementById('legend').style.display = depth > 0 ? 'none' : '';
-
-  // Breadcrumb
-  const bc = document.getElementById('breadcrumb');
-  if (history.length === 0) { bc.innerHTML = ''; }
-  else {
-    const show = history.slice(-4);
-    let html = '';
-    if (history.length > 4) html += '<span class="bc-pill">…</span><span class="bc-sep">›</span>';
-    show.forEach((s, i) => {
-      html += `<span class="bc-pill${i === show.length-1 ? ' current' : ''}" title="${s.lab}">${s.lab.length > 35 ? s.lab.slice(0,32)+'…' : s.lab}</span>`;
-      if (i < show.length-1) html += '<span class="bc-sep">›</span>';
-    });
-    bc.innerHTML = html;
-  }
-
-  // Buttons
-  document.getElementById('btn-back').classList.toggle('hidden', depth === 0);
-  document.getElementById('btn-restart').classList.toggle('hidden', depth === 0);
-  document.getElementById('btn-print').classList.toggle('hidden', !isLeaf);
-
-  // Main content
-  const contentEl = document.getElementById('content');
-  if (isNode) {
-    const d = T[current];
-    let html = `<div class="q-wrap fade-in">
-      <div class="q-eyebrow">Decision point ${depth + 1}</div>
-      <div class="q-text">${d.q}</div>
-      ${d.hint ? `<div class="q-hint">${d.hint}</div>` : ''}
-    </div>
-    <div class="opts-grid fade-in">`;
-    d.opts.forEach((o, i) => {
-      html += `<button class="opt-card" onclick="choose(${i})">
-        <div class="opt-icon">
-          <svg viewBox="0 0 16 16" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12l4-4-4-4"/></svg>
-        </div>
-        <div>
-          <div class="opt-label">${o.l}</div>
-          ${o.s ? `<div class="opt-sub">${o.s}</div>` : ''}
-        </div>
-      </button>`;
-    });
-    html += '</div>';
-    contentEl.innerHTML = html;
-  } else if (isLeaf) {
-    const d = L[current];
-    const colorMap = {
-      indigo:'lh-indigo', teal:'lh-teal', violet:'lh-violet',
-      amber:'lh-amber', blue:'lh-blue', rose:'lh-rose',
-      slate:'lh-slate', emerald:'lh-emerald'
-    };
-    const catColors = {
-      Parametric:'#4338CA', 'Non-parametric':'#0D9488', Categorical:'#6D28D9',
-      Regression:'#92400E', Correlation:'#1D4ED8', Agreement:'#9D174D',
-      Survival:'#334155', Diagnostic:'#065F46'
-    };
-    const hClass = colorMap[d.color] || 'lh-indigo';
-    let html = `<div class="leaf-wrap fade-in">
-      <div class="leaf-header ${hClass}">
-        <div class="leaf-cat-badge">${d.cat}</div>
-        <div class="leaf-name">${d.name}</div>
-        <div class="leaf-brief">${d.brief}</div>
-      </div>
-      <div class="leaf-body">
-        <div class="leaf-section">
-          <div class="ls-label">When to use</div>
-          <ul class="check-list">${d.use.map(u => `<li>${u}</li>`).join('')}</ul>
-        </div>
-        <div class="leaf-section">
-          <div class="ls-label">Key assumptions</div>
-          <ul class="ls-list">${d.assume.map(a => `<li>${a}</li>`).join('')}</ul>
-        </div>
-        <div class="leaf-section">
-          <div class="ls-label">Code</div>
-          <div class="codes-pair">
-            <div class="code-block">
-              <div class="code-lang">Python</div>
-              ${d.py.split('\n').map(line => `<div class="code-line">${line}</div>`).join('')}
-            </div>
-            <div class="code-block">
-              <div class="code-lang">R</div>
-              ${d.r.split('\n').map(line => `<div class="code-line">${line}</div>`).join('')}
-            </div>
-          </div>
-        </div>
-        <div class="leaf-section">
-          <div class="ls-label">What to report</div>
-          <div class="report-items">${d.report.map(r => `<span class="report-item">${r}</span>`).join('')}</div>
-        </div>
-        <div class="leaf-section">
-          <div class="ls-label">Effect size</div>
-          <div class="ls-content">${d.effect}</div>
-        </div>`;
-    if (d.posthoc) {
-      html += `<div class="leaf-section">
-        <div class="ls-label">Post-hoc / follow-up tests</div>
-        <div class="ls-content">${d.posthoc}</div>
-      </div>`;
+    function hideAll() {
+        statPage.classList.remove('active-page');
+        mlPage.classList.remove('active-page');
+        aboutInfo.classList.remove('active-info');
+        teamInfo.classList.remove('active-info');
     }
-    if (d.warn) {
-      html += `<div class="leaf-section">
-        <div class="warn-box">
-          <div class="warn-title">⚠ Important</div>
-          <div class="warn-text">${d.warn}</div>
-        </div>
-      </div>`;
+
+    document.getElementById('stat-nav').addEventListener('click', () => { hideAll(); statPage.classList.add('active-page'); });
+    document.getElementById('ml-nav').addEventListener('click', () => { hideAll(); mlPage.classList.add('active-page'); });
+    document.getElementById('about-nav').addEventListener('click', () => { hideAll(); aboutInfo.classList.add('active-info'); });
+    document.getElementById('team-nav').addEventListener('click', () => { hideAll(); teamInfo.classList.add('active-info'); });
+    document.getElementById('closeAbout').addEventListener('click', () => { aboutInfo.classList.remove('active-info'); statPage.classList.add('active-page'); });
+    document.getElementById('closeTeam').addEventListener('click', () => { teamInfo.classList.remove('active-info'); statPage.classList.add('active-page'); });
+
+    // Default show Stat page
+    statPage.classList.add('active-page');
+
+    // Show/hide normality field based on dependent & independent
+    const depSelect = document.getElementById('depVar');
+    const indepSelect = document.getElementById('indepVar');
+    const normalityGroup = document.getElementById('normalityGroup');
+
+    function toggleNormality() {
+        const dep = depSelect.value;
+        const indep = indepSelect.value;
+        if (dep === 'continuous' && (indep === 'binary' || indep === 'multicat')) {
+            normalityGroup.style.display = 'block';
+        } else {
+            normalityGroup.style.display = 'none';
+        }
     }
-    html += '</div></div>';
-    contentEl.innerHTML = html;
-  }
-}
+    depSelect.addEventListener('change', toggleNormality);
+    indepSelect.addEventListener('change', toggleNormality);
+    toggleNormality();
 
-// ── NAVIGATION ───────────────────────────────────────────────────────────────
-function choose(i) {
-  const d = T[current];
-  if (!d) return;
-  const opt = d.opts[i];
-  history.push({ from: current, lab: opt.l, next: opt.n });
-  current = opt.n;
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  render();
-}
-function goBack() {
-  if (!history.length) return;
-  const s = history.pop();
-  current = s.from;
-  render();
-}
-function restart() {
-  history = []; current = 'start';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  render();
-}
+    // Statistical test logic
+    document.getElementById('getStatBtn').addEventListener('click', () => {
+        const dep = depSelect.value;
+        const indep = indepSelect.value;
+        const norm = document.getElementById('normality').value;
+        let test = '';
+        let explanation = '';
+        let reference = '';
 
-render();
+        if (dep === 'continuous') {
+            if (indep === 'binary') {
+                if (norm === 'yes') {
+                    test = 'Independent two-sample t-test';
+                    explanation = 'Compares means between two independent groups.';
+                    reference = 'Student (1908) – The probable error of a mean.';
+                } else {
+                    test = 'Mann-Whitney U test';
+                    explanation = 'Non‑parametric alternative to t‑test.';
+                    reference = 'Mann & Whitney (1947) – On a test of whether one of two random variables is stochastically larger.';
+                }
+            } else if (indep === 'multicat') {
+                if (norm === 'yes') {
+                    test = 'One‑way ANOVA';
+                    explanation = 'Compares means across three or more groups.';
+                    reference = 'Fisher (1925) – Statistical Methods for Research Workers.';
+                } else {
+                    test = 'Kruskal‑Wallis H test';
+                    explanation = 'Non‑parametric alternative to ANOVA.';
+                    reference = 'Kruskal & Wallis (1952) – Use of ranks in one‑criterion variance analysis.';
+                }
+            } else if (indep === 'continuous') {
+                test = 'Pearson correlation (or Spearman if non‑normal)';
+                explanation = 'Measures linear relationship between two continuous variables.';
+                reference = 'Pearson (1896) – Mathematical contributions to the theory of evolution.';
+                if (norm === 'no') {
+                    test = 'Spearman’s rank correlation';
+                    explanation = 'Non‑parametric correlation for monotonic relationships.';
+                    reference = 'Spearman (1904) – The proof and measurement of association between two things.';
+                }
+            }
+        } else if (dep === 'categorical') {
+            if (indep === 'binary' || indep === 'multicat') {
+                test = 'Chi‑square test of independence';
+                explanation = 'Tests association between two categorical variables.';
+                reference = 'Pearson (1900) – On the criterion that a given system of deviations is likely to arise from random sampling.';
+            } else if (indep === 'continuous') {
+                test = 'Logistic regression';
+                explanation = 'Models relationship between binary outcome and continuous predictor(s).';
+                reference = 'Cox (1958) – The regression analysis of binary sequences.';
+            }
+        }
+
+        const resultDiv = document.getElementById('statResult');
+        resultDiv.innerHTML = `
+            <h3>✅ Recommended test: ${test}</h3>
+            <p>${explanation}</p>
+            <div class="ref">📚 Reference: ${reference}</div>
+            <div class="warning">⚠️ Always check sample size and assumptions before final choice.</div>
+        `;
+        resultDiv.style.display = 'block';
+    });
+
+    // -------------------- ML RECOMMENDATION ENGINE (with references) --------------------
+    function getMLRecommendation(sampleSize, nFeatures, aim) {
+        const ratio = sampleSize / nFeatures;
+        let models = [];
+        let references = [];
+        let advice = "";
+
+        const isSmall = sampleSize < 200;
+        const isVerySmall = sampleSize < 100;
+
+        if (aim === "binary") {
+            if (isVerySmall) {
+                models.push("Simple logistic regression with univariate pre‑screening");
+                references.push("Vittinghoff & McCulloch (2007) – Events per variable rule for logistic regression");
+            } else if (isSmall) {
+                models.push("L1/L2 regularised logistic regression (Ridge or Lasso)");
+                references.push("Pavlou et al. (2016) – How to develop a more accurate risk prediction model when there are few events");
+            } else {
+                models.push("Logistic regression with elastic net, Random Forest with shallow trees");
+                references.push("Couronné et al. (2018) – Random forest versus logistic regression for binary classification");
+            }
+            if (sampleSize >= 300 && ratio > 10) {
+                models.push("Support Vector Machine (linear kernel)");
+                references.push("Hasan et al. (2019) – SVM performance in clinical prediction with moderate samples");
+            }
+        } 
+        else if (aim === "multi") {
+            if (sampleSize < 200) {
+                models.push("Multinomial logistic regression with L2 regularisation");
+                references.push("Bull et al. (2019) – Multinomial logistic regression for small samples");
+            } else {
+                models.push("Linear discriminant analysis (LDA) or Random Forest with class weights");
+                references.push("Guo et al. (2021) – Sample size for multinomial classification in medical data");
+            }
+        }
+        else if (aim === "regression") {
+            if (ratio < 10) {
+                models.push("Ridge regression or Partial Least Squares (PLS)");
+                references.push("Frank & Friedman (1993) – Ridge regression in high‑dim low‑sample settings");
+            } else {
+                models.push("Linear regression with stepwise AIC, or Elastic Net");
+                references.push("Steyerberg (2019) – Clinical Prediction Models, Chapter on continuous outcomes");
+            }
+        }
+        else if (aim === "featureselection") {
+            models.push("Lasso (adaptive) or Boruta (Random Forest based)");
+            references.push("Tibshirani (1996) – Lasso for variable selection; Kursa & Rudnicki (2010) – Boruta");
+            if (sampleSize > 150) {
+                models.push("Recursive Feature Elimination (RFE) with SVM/logistic regression");
+                references.push("Guyon et al. (2002) – Gene selection for cancer classification (RFE)");
+            }
+        }
+        else if (aim === "rare") {
+            models.push("Logistic regression with Firth’s bias‑reduction or SMOTE + balanced random forest");
+            references.push("Firth (1993) – Bias reduction for rare events; King & Zeng (2001) – Logistic regression for rare events");
+            if (sampleSize < 300) advice += "⚠️ Rare event with small sample: use penalised likelihood (Firth). ";
+        }
+
+        if (isSmall && aim !== "rare") {
+            advice += "⚠️ <200 patients: avoid deep learning, XGBoost, or complex ensembles – high risk of overfitting. ";
+        }
+        if (ratio < 5) {
+            advice += "⚠️ Very low observations per feature (<5). Use strong regularisation or feature reduction. ";
+        }
+
+        let modelHtml = models.map(m => `• ${m}`).join('<br>');
+        let refHtml = references.map(r => `<div class="ref">📚 ${r}</div>`).join('');
+        return { modelHtml, advice, refHtml };
+    }
+
+    document.getElementById('mlRecommendBtn').addEventListener('click', () => {
+        const sampleSize = parseInt(document.getElementById('sampleSize').value);
+        const nFeatures = parseInt(document.getElementById('numFeatures').value);
+        const aim = document.getElementById('researchAim').value;
+
+        if (isNaN(sampleSize) || isNaN(nFeatures) || sampleSize <= 0 || nFeatures <= 0) {
+            alert("Please enter valid positive numbers for sample size and features.");
+            return;
+        }
+
+        const res = getMLRecommendation(sampleSize, nFeatures, aim);
+        let aimText = {
+            binary: "Binary classification", multi: "Multi‑class classification",
+            regression: "Continuous outcome", featureselection: "Feature selection",
+            rare: "Rare event prediction"
+        }[aim];
+
+        const output = document.getElementById('mlResult');
+        output.innerHTML = `
+            <h3>📌 ${aimText}</h3>
+            <p><strong>N = ${sampleSize} patients, P = ${nFeatures} features</strong> (ratio ${(sampleSize/nFeatures).toFixed(1)} per feature)</p>
+            <div style="background:#fff; border-radius:16px; padding:1rem; margin:1rem 0;">
+                <strong>✅ Suggested ML approaches:</strong><br>
+                ${res.modelHtml}
+            </div>
+            ${res.advice ? `<div style="background:#fff3e0; padding:0.8rem; border-radius:12px;"><strong>💡 Note:</strong> ${res.advice}</div>` : ''}
+            <div style="margin-top:1rem;"><strong>📖 Key references (share with AI engineer):</strong>${res.refHtml}</div>
+        `;
+        output.style.display = 'block';
+    });
 </script>
 </body>
 </html>
